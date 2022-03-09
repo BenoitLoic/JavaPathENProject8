@@ -16,11 +16,18 @@ import tourGuide.service.TourGuideService;
 import tourGuide.user.User;
 import tourGuide.user.UserReward;
 import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestRewardsService {
+
+  @org.junit.jupiter.api.BeforeAll
+  static void beforeAll() {
+    java.util.Locale.setDefault(java.util.Locale.US);
+  }
+
 
   @Test
   public void userGetRewards() {
@@ -47,7 +54,7 @@ public class TestRewardsService {
     assertTrue(rewardsService.isWithinAttractionProximity(attraction, attraction));
   }
 
-  @Ignore // Needs fixed - can throw ConcurrentModificationException
+  @Disabled("Needs fixed - can throw ConcurrentModificationException")
   @Test
   public void nearAllAttractions() {
     GpsUtil        gpsUtil        = new GpsUtil();

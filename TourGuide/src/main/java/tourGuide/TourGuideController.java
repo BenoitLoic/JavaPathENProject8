@@ -21,7 +21,7 @@ public class TourGuideController {
   TourGuideService tourGuideService;
 
   @RequestMapping("/")
-  public String index() {
+  public String index(java.util.Locale locale) {
     return "Greetings from TourGuide!";
   }
 

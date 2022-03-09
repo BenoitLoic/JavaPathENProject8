@@ -15,11 +15,17 @@ import tourGuide.service.TourGuideService;
 import tourGuide.user.User;
 import tripPricer.Provider;
 import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestTourGuideService {
+
+  @org.junit.jupiter.api.BeforeAll
+  static void beforeAll() {
+    java.util.Locale.setDefault(java.util.Locale.US);
+  }
 
   @Test
   public void getUserLocation() {
@@ -28,7 +34,7 @@ public class TestTourGuideService {
     InternalTestHelper.setInternalUserNumber(0);
     TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
 
-    User            user            = new User(UUID.randomUUID(), "jon", "000",
+    User user = new User(UUID.randomUUID(), "jon", "000",
         "jon@tourGuide.com");
     VisitedLocation visitedLocation = tourGuideService.trackUserLocation(user);
     tourGuideService.tracker.stopTracking();
@@ -85,7 +91,7 @@ public class TestTourGuideService {
     InternalTestHelper.setInternalUserNumber(0);
     TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
 
-    User            user            = new User(UUID.randomUUID(), "jon", "000",
+    User user = new User(UUID.randomUUID(), "jon", "000",
         "jon@tourGuide.com");
     VisitedLocation visitedLocation = tourGuideService.trackUserLocation(user);
 
@@ -94,15 +100,16 @@ public class TestTourGuideService {
     assertEquals(user.getUserId(), visitedLocation.userId);
   }
 
-  @Ignore // Not yet implemented
+
   @Test
+  @Disabled("not yet implemented")
   public void getNearbyAttractions() {
     GpsUtil        gpsUtil        = new GpsUtil();
     RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
     InternalTestHelper.setInternalUserNumber(0);
     TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
 
-    User            user            = new User(UUID.randomUUID(), "jon", "000",
+    User user = new User(UUID.randomUUID(), "jon", "000",
         "jon@tourGuide.com");
     VisitedLocation visitedLocation = tourGuideService.trackUserLocation(user);
 
