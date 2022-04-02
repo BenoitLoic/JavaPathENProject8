@@ -28,9 +28,13 @@ public class RewardsService {
     this.rewardsCentral = rewardCentral;
   }
 
+  /**
+   * Setter for proximity buffer
+   */
   public void setProximityBuffer(int proximityBuffer) {
     this.proximityBuffer = proximityBuffer;
   }
+
 
   public void setDefaultProximityBuffer() {
     proximityBuffer = defaultProximityBuffer;
@@ -53,18 +57,43 @@ public class RewardsService {
     }
   }
 
+  /**
+   * This method check if the attraction is within the proximity range of the location.
+   * @param attraction the attraction
+   * @param location the location
+   * @return true if they are in range, else return false
+   */
   public boolean isWithinAttractionProximity(Attraction attraction, Location location) {
     return !(getDistance(attraction, location) > attractionProximityRange);
   }
 
+  /**
+   * Check if the visitedLocation is within the range of the attraction.
+   * range defined by proximityBuffer
+   * @param visitedLocation the visitedLocation
+   * @param attraction the attraction
+   * @return true if they are in range, else return false
+   */
   private boolean nearAttraction(VisitedLocation visitedLocation, Attraction attraction) {
     return !(getDistance(attraction, visitedLocation.location) > proximityBuffer);
   }
 
+  /**
+   * This method get the reward points won by the user by visiting the attraction.
+   * @param attraction the attraction
+   * @param user the user
+   * @return number of points (integer) won by the user
+   */
   private int getRewardPoints(Attraction attraction, User user) {
     return rewardsCentral.getAttractionRewardPoints(attraction.attractionId, user.getUserId());
   }
 
+  /**
+   * Calculate distance between 2 coordinate.
+   * @param loc1 location 1 : latitude, longitude
+   * @param loc2 location 2 : latitude, longitude
+   * @return distance en Miles
+   */
   public double getDistance(Location loc1, Location loc2) {
     double lat1 = Math.toRadians(loc1.latitude);
     double lon1 = Math.toRadians(loc1.longitude);

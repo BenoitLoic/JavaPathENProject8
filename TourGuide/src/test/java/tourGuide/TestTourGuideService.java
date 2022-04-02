@@ -14,7 +14,7 @@ import tourGuide.service.RewardsService;
 import tourGuide.service.TourGuideService;
 import tourGuide.user.User;
 import tripPricer.Provider;
-import org.junit.Ignore;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestTourGuideService {
 
-  @org.junit.jupiter.api.BeforeAll
+  @BeforeAll
   static void beforeAll() {
     java.util.Locale.setDefault(java.util.Locale.US);
   }
@@ -38,7 +38,7 @@ public class TestTourGuideService {
         "jon@tourGuide.com");
     VisitedLocation visitedLocation = tourGuideService.trackUserLocation(user);
     tourGuideService.tracker.stopTracking();
-    assertTrue(visitedLocation.userId.equals(user.getUserId()));
+    assertEquals(visitedLocation.userId, user.getUserId());
   }
 
   @Test
@@ -54,13 +54,13 @@ public class TestTourGuideService {
     tourGuideService.addUser(user);
     tourGuideService.addUser(user2);
 
-    User retrivedUser  = tourGuideService.getUser(user.getUserName());
-    User retrivedUser2 = tourGuideService.getUser(user2.getUserName());
+    User retrievedUser  = tourGuideService.getUser(user.getUserName());
+    User retrievedUser2 = tourGuideService.getUser(user2.getUserName());
 
     tourGuideService.tracker.stopTracking();
 
-    assertEquals(user, retrivedUser);
-    assertEquals(user2, retrivedUser2);
+    assertEquals(user, retrievedUser);
+    assertEquals(user2, retrievedUser2);
   }
 
   @Test
@@ -106,6 +106,7 @@ public class TestTourGuideService {
   public void getNearbyAttractions() {
     GpsUtil        gpsUtil        = new GpsUtil();
     RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
+
     InternalTestHelper.setInternalUserNumber(0);
     TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
 
@@ -133,7 +134,7 @@ public class TestTourGuideService {
 
     tourGuideService.tracker.stopTracking();
 
-    assertEquals(10, providers.size());
+    assertEquals(5, providers.size());
   }
 
 

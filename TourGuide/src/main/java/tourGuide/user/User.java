@@ -70,9 +70,14 @@ public class User {
     visitedLocations.clear();
   }
 
+  // TODO MEH...
   public void addUserReward(UserReward userReward) {
-    if (userRewards.stream().filter(
-        r -> !r.attraction.attractionName.equals(userReward.attraction)).count() == 0) {
+    // le stream retourne le nombre de fois ou attraction.attractionName =!= userReward.attraction
+    // et si == 0 on ajoute une nouvelle reward à l'utilisateur
+    if (userRewards.stream()
+        .filter((tourGuide.user.UserReward r) -> !r.attraction.attractionName.equals(
+            userReward.attraction.attractionName))
+        .count() == 0) {
       userRewards.add(userReward);
     }
   }
