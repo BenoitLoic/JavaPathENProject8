@@ -1,9 +1,10 @@
 package tourGuide.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import gpsUtil.location.Location;
-import gpsUtil.location.VisitedLocation;
+
 import tourGuide.exception.DataNotFoundException;
+import tourGuide.model.Location;
+import tourGuide.model.VisitedLocation;
 import tourGuide.service.TourGuideService;
 import java.util.Date;
 import java.util.UUID;
@@ -37,10 +38,6 @@ class TourGuideControllerTest {
 
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
-//  @org.junit.jupiter.api.BeforeEach
-//  void setUp() {
-//    //locale.US ?
-//  }
 
   @Test
   void index() throws Exception {

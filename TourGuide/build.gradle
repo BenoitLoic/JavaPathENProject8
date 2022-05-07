@@ -13,7 +13,7 @@ repositories {
     mavenCentral()
 }
 ext {
-    set('springCloudVersion', "2021.0.1")
+    set('springCloudVersion', "2021.0.2")
 }
 
 dependencies {
@@ -22,6 +22,10 @@ dependencies {
 
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
     implementation 'org.springframework.cloud:spring-cloud-dependencies:2021.0.2'
+    implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-loadbalancer', version: '3.1.2'
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-ribbon:2.2.10.RELEASE'
+
+    implementation 'org.springframework.boot:spring-boot-starter-validation:2.6.7'
 
     implementation group: 'org.javamoney', name: 'moneta', version: '1.4.2', ext: 'pom'
     implementation group: 'com.jsoniter', name: 'jsoniter', version: '0.9.23'
@@ -30,6 +34,8 @@ dependencies {
     implementation files('libs/TripPricer.jar')
     implementation 'org.javamoney.moneta:moneta-core:1.4.2'
     implementation 'junit:junit:4.13.1'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux:2.6.7'
+
 
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.8.2'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

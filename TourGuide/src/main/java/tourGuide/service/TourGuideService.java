@@ -14,13 +14,15 @@ import java.util.stream.IntStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import gpsUtil.GpsUtil;
-import gpsUtil.location.Attraction;
-import gpsUtil.location.Location;
-import gpsUtil.location.VisitedLocation;
+
+import tourGuide.client.LocationClient;
 import tourGuide.helper.InternalTestHelper;
+import tourGuide.model.Attraction;
+import tourGuide.model.Location;
+import tourGuide.model.VisitedLocation;
 import tourGuide.tracker.Tracker;
 import tourGuide.user.User;
 import tourGuide.user.UserReward;
@@ -30,14 +32,15 @@ import tripPricer.TripPricer;
 @Service
 public class TourGuideService {
   public final    Tracker        tracker;
-  protected final GpsUtil        gpsUtil;
-  protected final RewardsService rewardsService;
+
 
   boolean testMode = true;
+  @Autowired
+  private LocationClient locationClient;
 
-  public TourGuideService(GpsUtil gpsUtil, RewardsService rewardsService) {
-    this.rewardsService = rewardsService;
-    this.gpsUtil        = gpsUtil;
+  public TourGuideService( ) {
+
+
 
     if (testMode) {
       logger.info("TestMode enabled");
@@ -68,8 +71,7 @@ public class TourGuideService {
    * @return the last visited location if exists, or the actual location
    */
   public VisitedLocation getUserLocation(User user) {
-    VisitedLocation visitedLocation = (user.getVisitedLocations().size() > 0) ?
-        user.getLastVisitedLocation() :
+    VisitedLocation visitedLocation =
         trackUserLocation(user);
     return visitedLocation;
   }
@@ -82,6 +84,7 @@ public class TourGuideService {
    * @return the user
    */
   public User getUser(String userName) {
+
     return internalUserMap.get(userName);
   }
 
@@ -139,30 +142,30 @@ public class TourGuideService {
    */
   public VisitedLocation trackUserLocation(User user) {
 
-    VisitedLocation visitedLocation = gpsUtil.getUserLocation(user.getUserId());
+    VisitedLocation visitedLocation = locationClient.addLocation(user.getUserId());
     user.addToVisitedLocations(visitedLocation);
-    rewardsService.calculateRewards(user);
+//    rewardsService.calculateRewards(user);
     return visitedLocation;
   }
 
-  /**
-   * This method find all attractions in range.
-   *
-   * @param visitedLocation the location
-   * @return a list of all attraction in range
-   */
-  public List<Attraction> getNearByAttractions(VisitedLocation visitedLocation) {
-
-    List<Attraction> nearbyAttractions = new ArrayList<>();
-
-    for (Attraction attraction : gpsUtil.getAttractions()) {
-      if (rewardsService.isWithinAttractionProximity(attraction, visitedLocation.location)) {
-        nearbyAttractions.add(attraction);
-      }
-    }
-
-    return nearbyAttractions;
-  }
+//  /**
+//   * This method find all attractions in range.
+//   *
+//   * @param visitedLocation the location
+//   * @return a list of all attraction in range
+//   */
+//  public List<Attraction> getNearByAttractions(VisitedLocation visitedLocation) {
+//
+//    List<Attraction> nearbyAttractions = new ArrayList<>();
+//
+//    for (Attraction attraction : gpsUtil.getAttractions()) {
+//      if (rewardsService.isWithinAttractionProximity(attraction, visitedLocation.location)) {
+//        nearbyAttractions.add(attraction);
+//      }
+//    }
+//
+//    return nearbyAttractions;
+//  }
 
   private void addShutDownHook() {
     Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -191,7 +194,10 @@ public class TourGuideService {
       String userName = "internalUser" + i;
       String phone    = "000";
       String email    = userName + "@tourGuide.com";
-      User user = new User(UUID.randomUUID(), userName,
+      String userNumber = String.format("%06d", i);
+      UUID userId = UUID.fromString("0000-00-00-00-" + userNumber);
+
+      User user = new User(userId, userName,
           phone, email);
       generateUserLocationHistory(user);
 

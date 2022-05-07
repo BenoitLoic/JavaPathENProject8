@@ -5,7 +5,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import gpsUtil.location.VisitedLocation;
+import tourGuide.model.VisitedLocation;
 import tripPricer.Provider;
 
 public class User {
@@ -75,8 +75,8 @@ public class User {
     // le stream retourne le nombre de fois ou attraction.attractionName =!= userReward.attraction
     // et si == 0 on ajoute une nouvelle reward à l'utilisateur
     if (userRewards.stream()
-        .filter((tourGuide.user.UserReward r) -> !r.attraction.attractionName.equals(
-            userReward.attraction.attractionName))
+        .filter((tourGuide.user.UserReward r) -> !r.attraction.equals(
+            userReward.attraction.attractionName()))
         .count() == 0) {
       userRewards.add(userReward);
     }
