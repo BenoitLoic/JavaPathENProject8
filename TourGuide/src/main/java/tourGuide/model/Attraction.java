@@ -17,7 +17,8 @@ public record Attraction(
         String city,
         String state,
         UUID attractionId,
-        Location location
+        Double latitude,
+        Double longitude
 ) {
 
 }

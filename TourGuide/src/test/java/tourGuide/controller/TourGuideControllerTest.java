@@ -1,11 +1,13 @@
 package tourGuide.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import tourGuide.exception.DataNotFoundException;
+import tourGuide.exception.IllegalArgumentException;
 import tourGuide.model.Location;
 import tourGuide.model.VisitedLocation;
 import tourGuide.service.TourGuideService;
+import tourGuide.user.User;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -17,48 +19,49 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static tourGuide.config.Url.*;
+import static tourGuide.config.Url.GETLOCATION;
+import static tourGuide.config.Url.GETNEARBYATTRACTIONS;
+import static tourGuide.config.Url.INDEX;
 
-@WebMvcTest(controllers =
-    TourGuideController.class)
+@WebMvcTest(controllers = TourGuideController.class)
 @AutoConfigureMockMvc
 class TourGuideControllerTest {
 
-  @Autowired
-  MockMvc             mockMvc;
-  @MockBean
-  TourGuideService    tourGuideServiceMock;
-  @InjectMocks
-  TourGuideController tourGuideController;
+  private final UUID userId = UUID.randomUUID();
+  private final String validUserName = "userName";
+  private final Date date = new Date();
+  private final VisitedLocation visitedLocationTest =
+      new VisitedLocation(UUID.randomUUID(), new Location(56d, 22d), date);
+  private final User validUser =
+      new User(userId, validUserName, "phoneNumberTest", "emailAddressTest");
+  @Autowired MockMvc mockMvc;
+  @MockBean TourGuideService tourGuideServiceMock;
+  @InjectMocks TourGuideController tourGuideController;
 
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
-
   @Test
   void index() throws Exception {
-    mockMvc.perform(
-        get(INDEX)
-    ).andExpect(status().isOk());
+    mockMvc.perform(get(INDEX)).andExpect(status().isOk());
   }
 
   @Test
   void getLocationValid() throws Exception {
     // GIVEN
-    VisitedLocation visitedLocationTest = new VisitedLocation(UUID.randomUUID(),
-        new Location(56d, 22d), new Date());
+
     // WHEN
-    when(tourGuideServiceMock.getUserLocation(Mockito.any())).thenReturn(visitedLocationTest)
-    ;
+    when(tourGuideServiceMock.getUserLocation(Mockito.any())).thenReturn(visitedLocationTest);
     // THEN
-    mockMvc.perform(get(GETLOCATION).param("userName", "validUserName"))
+    mockMvc
+        .perform(get(GETLOCATION).param("userName", "validUserName"))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-
   }
 
   @Test
@@ -68,9 +71,7 @@ class TourGuideControllerTest {
     // WHEN
 
     // THEN
-    mockMvc.perform(get(GETLOCATION).param("userName", ""))
-        .andExpect(status().isBadRequest());
-
+    mockMvc.perform(get(GETLOCATION).param("userName", "")).andExpect(status().isBadRequest());
   }
 
   @Test
@@ -81,9 +82,9 @@ class TourGuideControllerTest {
     when(tourGuideServiceMock.getUserLocation(any())).thenThrow(DataNotFoundException.class);
 
     // THEN
-    mockMvc.perform(get(GETLOCATION).param("userName", "uknUserName"))
+    mockMvc
+        .perform(get(GETLOCATION).param("userName", "uknUserName"))
         .andExpect(status().isNotFound());
-
   }
 
   // cette méthode doit retourner les 5 attractions les plus proches de l'utilisateur quelque soit
@@ -95,39 +96,49 @@ class TourGuideControllerTest {
   //                          4. la distance en miles entre l'attraction et l'utilisateur
   //                          5. les rewardsPoints obtenus en cas de visite de l'attraction
   @Test
-  void getNearbyAttractionsValid() {
+  void getNearbyAttractionsValid() throws Exception {
 
     // GIVEN
 
     // WHEN
-
+    when(tourGuideServiceMock.getNearbyAttractions(Mockito.any())).thenReturn(new ArrayList<>());
     // THEN
-    assertEquals(0, 1);
-
+    mockMvc
+        .perform(get(GETNEARBYATTRACTIONS).param("userName", validUserName))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON));
   }
 
   @Test
-  void getNearbyAttractionsInvalid() {
+  void getNearbyAttractionsInvalid() throws Exception {
 
     // GIVEN
 
     // WHEN
 
     // THEN
-    assertEquals(0, 1);
-
+    mockMvc
+        .perform(get(GETNEARBYATTRACTIONS).param("userName", ""))
+        .andExpect(status().isBadRequest())
+        .andExpect(
+            result ->
+                assertTrue(result.getResolvedException() instanceof IllegalArgumentException));
   }
 
   @Test
-  void getNearbyAttractionsWhenUserDoesntExist_ShouldThrowDataNotFoundException() {
+  void getNearbyAttractionsWhenUserDoesntExist_ShouldThrowDataNotFoundException() throws Exception {
 
     // GIVEN
 
     // WHEN
-
+    Mockito.doThrow(DataNotFoundException.class)
+        .when(tourGuideServiceMock)
+        .getNearbyAttractions(any());
     // THEN
-    assertEquals(0, 1);
-
+    mockMvc
+        .perform(get(GETNEARBYATTRACTIONS).param("userName", validUserName))
+        .andExpect(status().isNotFound())
+        .andExpect(result -> assertTrue(result.getResolvedException() instanceof DataNotFoundException));
   }
 
   @Test
@@ -138,7 +149,6 @@ class TourGuideControllerTest {
     // WHEN
 
     // THEN
-
 
   }
 
@@ -151,7 +161,6 @@ class TourGuideControllerTest {
 
     // THEN
 
-
   }
 
   @Test
@@ -162,7 +171,6 @@ class TourGuideControllerTest {
     // WHEN
 
     // THEN
-
 
   }
 
@@ -178,9 +186,7 @@ class TourGuideControllerTest {
 
     // THEN
 
-
   }
-
 
   @Test
   void getTripDealsValid() {
@@ -190,8 +196,8 @@ class TourGuideControllerTest {
 
     // THEN
 
-
   }
+
   @Test
   void getTripDealsInvalid() {
     // GIVEN
@@ -200,8 +206,8 @@ class TourGuideControllerTest {
 
     // THEN
 
-
   }
+
   @Test
   void getTripDealsWhenUserDoesntExist_ShouldThrowDataNotFoundException() {
     // GIVEN
@@ -209,7 +215,6 @@ class TourGuideControllerTest {
     // WHEN
 
     // THEN
-
 
   }
 }

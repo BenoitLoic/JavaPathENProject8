@@ -2,10 +2,12 @@ package tourGuide.controller;
 
 import tourGuide.exception.DataNotFoundException;
 import tourGuide.exception.IllegalArgumentException;
+import tourGuide.model.Attraction;
 import tourGuide.model.Location;
 import tourGuide.model.VisitedLocation;
 import tourGuide.service.TourGuideService;
 import tourGuide.user.User;
+import java.util.Collection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import static tourGuide.config.Url.GETLOCATION;
+import static tourGuide.config.Url.GETNEARBYATTRACTIONS;
 import static tourGuide.config.Url.INDEX;
 
 @RestController
@@ -21,7 +24,6 @@ public class TourGuideController {
 
   @Autowired private TourGuideService tourGuideService;
   private final Logger logger = LoggerFactory.getLogger(TourGuideController.class);
-
 
   @RequestMapping(value = INDEX)
   public String index() {
@@ -58,11 +60,17 @@ public class TourGuideController {
   //  // The distance in miles between the user's location and each of the attractions.
   //  // The reward points for visiting each Attraction.
   //  //    Note: Attraction reward points can be gathered from RewardsCentral
-  //  @GetMapping(value = GETNEARBYATTRACTIONS)
-  //  public String getNearbyAttractions(@RequestParam String userName) {
-  //    VisitedLocation visitedLocation = tourGuideService.getUserLocation(getUser(userName));
-  //    return JsonStream.serialize(tourGuideService.getNearByAttractions(visitedLocation));
-  //  }
+  @GetMapping(value = GETNEARBYATTRACTIONS)
+  public Collection getNearbyAttractions(@RequestParam String userName) {
+
+    if (userName == null || userName.isBlank()) {
+      logger.warn("error, username is mandatory. username: " + userName);
+      throw new IllegalArgumentException("error, username is mandatory.");
+    }
+
+    Collection<Attraction> attractions = tourGuideService.getNearbyAttractions(userName);
+    return attractions;
+  }
   //
   //  /**
   //   * This method get the reward points owned by the user.
