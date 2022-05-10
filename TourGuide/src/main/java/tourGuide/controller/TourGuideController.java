@@ -123,7 +123,8 @@ public class TourGuideController {
    * @param userName the user's userName
    * @return the User
    */
-  private User getUser(String userName) {
+  @GetMapping("/getUser")
+  private User getUser(@RequestParam String userName) {
 
     User user = tourGuideService.getUser(userName);
     if (user == null) {

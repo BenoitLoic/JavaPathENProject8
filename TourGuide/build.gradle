@@ -30,12 +30,12 @@ dependencies {
     implementation group: 'org.javamoney', name: 'moneta', version: '1.4.2', ext: 'pom'
     implementation group: 'com.jsoniter', name: 'jsoniter', version: '0.9.23'
 
-
     implementation files('libs/TripPricer.jar')
+    implementation files('libs/gpsUtil.jar')
+
     implementation 'org.javamoney.moneta:moneta-core:1.4.2'
     implementation 'junit:junit:4.13.1'
     implementation 'org.springframework.boot:spring-boot-starter-webflux:2.6.7'
-
 
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.8.2'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

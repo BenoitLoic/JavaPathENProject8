@@ -74,10 +74,14 @@ public class User {
   public void addUserReward(UserReward userReward) {
     // le stream retourne le nombre de fois ou attraction.attractionName =!= userReward.attraction
     // et si == 0 on ajoute une nouvelle reward à l'utilisateur
-    if (userRewards.stream()
-        .filter((tourGuide.user.UserReward r) -> !r.attraction.equals(
-            userReward.attraction.attractionName()))
-        .count() == 0) {
+    long count = 0L;
+    for (UserReward r : userRewards) {
+      if (!r.attraction.attractionName().equals(
+              userReward.attraction.attractionName())) {
+        count++;
+      }
+    }
+    if (count == 0) {
       userRewards.add(userReward);
     }
   }

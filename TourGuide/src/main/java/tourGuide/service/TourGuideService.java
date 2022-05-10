@@ -16,6 +16,7 @@ import tripPricer.Provider;
 import tripPricer.TripPricer;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -23,33 +24,42 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class TourGuideService {
-  public final Tracker tracker;
+  public Tracker tracker;
+  private static final String tripPricerApiKey = "test-server-api-key";
+  protected final Logger logger = LoggerFactory.getLogger(TourGuideService.class);
+  protected final TripPricer tripPricer = new TripPricer();
 
-  boolean testMode = true;
-  @Autowired private LocationClient locationClient;
-  @Autowired private UserClient userClient;
+  @Value("${tourGuide.testMode}")
+  boolean testMode;
 
-  public TourGuideService() {
+  private final LocationClient locationClient;
+  private final UserClient userClient;
 
+  public TourGuideService(LocationClient locationClient, UserClient userClient) {
+    this.locationClient = locationClient;
+    this.userClient = userClient;
+  }
+
+  @PostConstruct
+  void testModeInit() {
     if (testMode) {
       logger.info("TestMode enabled");
       logger.debug("Initializing users");
       initializeInternalUsers();
       logger.debug("Finished initializing users");
+      tracker = new Tracker(this);
+      addShutDownHook();
     }
-    tracker = new Tracker(this);
-    addShutDownHook();
   }
-
   /**
    * This method return the list of rewards owned by the given user.
    *
@@ -68,7 +78,7 @@ public class TourGuideService {
    * @return the last visited location if exists, or the actual location
    */
   public VisitedLocation getUserLocation(User user) {
-    VisitedLocation visitedLocation = trackUserLocation(user);
+    VisitedLocation visitedLocation = locationClient.addLocation(user.getUserId());
     return visitedLocation;
   }
 
@@ -89,7 +99,7 @@ public class TourGuideService {
    * @return the list of users
    */
   public List<User> getAllUsers() {
-    return internalUserMap.values().stream().collect(Collectors.toList());
+    return new ArrayList<>(internalUserMap.values());
   }
 
   /**
@@ -137,7 +147,7 @@ public class TourGuideService {
   public VisitedLocation trackUserLocation(User user) {
 
     VisitedLocation visitedLocation = locationClient.addLocation(user.getUserId());
-    user.addToVisitedLocations(visitedLocation);
+        user.addToVisitedLocations(visitedLocation);
     //    rewardsService.calculateRewards(user);
     return visitedLocation;
   }
@@ -173,14 +183,10 @@ public class TourGuideService {
           locationClient.getNearbyAttractions(
               visitedLocation.location().latitude(), visitedLocation.location().longitude());
 
-      for (Attraction a  :nearbyAttractions ) {
-        System.out.println(a.latitude());
-      }
-
       return nearbyAttractions;
     } catch (FeignException.FeignClientException fce) {
       logger.error("Error, Feign client failed." + fce);
-    throw new ResourceNotFoundException("Error, cant reach service.");
+      throw new ResourceNotFoundException("Error, cant reach service.");
     }
   }
 
@@ -199,11 +205,7 @@ public class TourGuideService {
    * Methods Below: For Internal Testing
    *
    **********************************************************************************/
-  private static final String tripPricerApiKey = "test-server-api-key";
 
-  protected final Logger logger = LoggerFactory.getLogger(TourGuideService.class);
-
-  protected final TripPricer tripPricer = new TripPricer();
   // Database connection will be used for external users, but for testing purposes internal users
   // are provided and stored in memory
   protected final Map<String, User> internalUserMap = new HashMap<>();

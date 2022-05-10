@@ -56,10 +56,12 @@ class TourGuideControllerTest {
     // GIVEN
 
     // WHEN
+    when(tourGuideServiceMock.getUser(any())).thenReturn(validUser);
     when(tourGuideServiceMock.getUserLocation(Mockito.any())).thenReturn(visitedLocationTest);
     // THEN
     mockMvc
-        .perform(get(GETLOCATION).param("userName", "validUserName"))
+        .perform(get(GETLOCATION)
+                .param("userName", "validUserName"))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON));
   }
@@ -138,7 +140,8 @@ class TourGuideControllerTest {
     mockMvc
         .perform(get(GETNEARBYATTRACTIONS).param("userName", validUserName))
         .andExpect(status().isNotFound())
-        .andExpect(result -> assertTrue(result.getResolvedException() instanceof DataNotFoundException));
+        .andExpect(
+            result -> assertTrue(result.getResolvedException() instanceof DataNotFoundException));
   }
 
   @Test
