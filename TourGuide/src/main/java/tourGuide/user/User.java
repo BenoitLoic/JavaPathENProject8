@@ -9,8 +9,8 @@ import tourGuide.model.VisitedLocation;
 import tripPricer.Provider;
 
 public class User {
-  private final UUID                  userId;
-  private final String                userName;
+  private  UUID                  userId;
+  private  String                userName;
   private       String                phoneNumber;
   private       String                emailAddress;
   private       Date                  latestLocationTimestamp;
@@ -18,6 +18,9 @@ public class User {
   private final List<UserReward>      userRewards      = new ArrayList<>();
   private       UserPreferences       userPreferences  = new UserPreferences();
   private       List<Provider>        tripDeals        = new ArrayList<>();
+
+  public User() {
+  }
 
   public User(UUID userId, String userName, String phoneNumber, String emailAddress) {
     this.userId       = userId;

@@ -43,7 +43,15 @@ public class Tracker extends Thread {
       logger.debug("Begin Tracker. Tracking " + users.size() + " users.");
 
       stopWatch.start();
-      users.parallelStream().forEach(tourGuideService::trackUserLocation);
+      users.stream().parallel()
+          .forEach(
+              user -> {
+                try {
+                  tourGuideService.trackUserLocation(user);
+                } catch (Exception e) {
+                  throw new RuntimeException(e);
+                }
+              });
       stopWatch.stop();
 
       logger.debug(

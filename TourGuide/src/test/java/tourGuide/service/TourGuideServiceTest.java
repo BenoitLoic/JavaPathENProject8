@@ -3,6 +3,7 @@ package tourGuide.service;
 import feign.FeignException;
 import tourGuide.client.LocationClient;
 import tourGuide.client.UserClient;
+import tourGuide.dto.GetNearbyAttractionDto;
 import tourGuide.exception.DataNotFoundException;
 import tourGuide.exception.ResourceNotFoundException;
 import tourGuide.model.Attraction;
@@ -13,9 +14,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -41,16 +42,15 @@ class TourGuideServiceTest {
 
   @Mock LocationClient locationClientMock;
   @Mock UserClient userClientMock;
+  @Mock RewardsService rewardsServiceMock;
   @InjectMocks TourGuideService tourGuideService;
-
-
 
   @BeforeEach
   void setUp() {
-     userId = UUID.randomUUID();
-     dateTest = new Date();
+    userId = UUID.randomUUID();
+    dateTest = new Date();
     visitedLocationTest = new VisitedLocation(userId, new Location(50., 20.), dateTest);
-    tourGuideService.testMode=false;
+    tourGuideService.testMode = false;
   }
 
   // reçois un user -> renvoi une VisitedLocation
@@ -77,7 +77,8 @@ class TourGuideServiceTest {
     // GIVEN
     UUID attractionId1 = UUID.randomUUID();
     Attraction attraction1 =
-        new Attraction("attractionNameTest1", "cityTest", "stateTest", attractionId1, 120d, 50d);
+        new Attraction(
+            "attractionNameTest1", "cityTest", "stateTest", attractionId1, 120d, 50d, 5d);
     User userTest = new User(userId, "username", "phone", "email");
     // WHEN
     Mockito.when(userClientMock.getUserByUsername(Mockito.anyString())).thenReturn(userTest);
@@ -86,16 +87,24 @@ class TourGuideServiceTest {
 
     when(locationClientMock.getNearbyAttractions(anyDouble(), anyDouble()))
         .thenReturn(Arrays.asList(attraction1, attraction1, attraction1, attraction1, attraction1));
+    when(rewardsServiceMock.calculateRewards(Mockito.any(), Mockito.any()))
+        .thenReturn(
+            Arrays.asList(
+                new GetNearbyAttractionDto(),
+                new GetNearbyAttractionDto(),
+                new GetNearbyAttractionDto(),
+                new GetNearbyAttractionDto(),
+                new GetNearbyAttractionDto()));
 
-    Collection<Attraction> actual = tourGuideService.getNearbyAttractions("username");
+    Map<Location, Collection<GetNearbyAttractionDto>> actual = tourGuideService.getNearbyAttractions("username");
     // THEN
     verify(userClientMock, times(1)).getUserByUsername("username");
     verify(locationClientMock, times(1)).addLocation(userId);
     verify(locationClientMock, times(1))
         .getNearbyAttractions(
             visitedLocationTest.location().latitude(), visitedLocationTest.location().longitude());
-    assertEquals(5, actual.size());
-  }
+
+ }
 
   @Test
   void getNearbyAttractions_WhenUserClientReturnNull_ShouldThrowDataNotFoundException() {
@@ -115,10 +124,11 @@ class TourGuideServiceTest {
     // GIVEN
     UUID attractionId1 = UUID.randomUUID();
     Attraction attraction1 =
-        new Attraction("attractionNameTest1", "cityTest", "stateTest", attractionId1, 120d, 50d);
+        new Attraction(
+            "attractionNameTest1", "cityTest", "stateTest", attractionId1, 120d, 50d, 5d);
     UUID attractionId2 = UUID.randomUUID();
     Attraction attraction2 =
-        new Attraction("attractionNameTest2", "cityTest", "stateTest", attractionId2, 20d, 50d);
+        new Attraction("attractionNameTest2", "cityTest", "stateTest", attractionId2, 20d, 50d, 2d);
 
     List<Attraction> attractions =
         Arrays.asList(attraction1, attraction2, attraction1, attraction2, attraction1);

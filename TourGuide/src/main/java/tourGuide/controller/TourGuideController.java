@@ -1,13 +1,14 @@
 package tourGuide.controller;
 
+import tourGuide.dto.GetNearbyAttractionDto;
 import tourGuide.exception.DataNotFoundException;
 import tourGuide.exception.IllegalArgumentException;
-import tourGuide.model.Attraction;
 import tourGuide.model.Location;
 import tourGuide.model.VisitedLocation;
 import tourGuide.service.TourGuideService;
 import tourGuide.user.User;
 import java.util.Collection;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,26 +50,24 @@ public class TourGuideController {
     return visitedLocation.location();
   }
 
-  //  //  TODO: Change this method to no longer return a List of Attractions.
-  //  //  Instead: Get the closest five tourist attractions to the user - no matter how far away
-  // they
-  //  // are.
-  //  //  Return a new JSON object that contains:
-  //  // Name of Tourist attraction,
-  //  // Tourist attractions lat/long,
-  //  // The user's location lat/long,
-  //  // The distance in miles between the user's location and each of the attractions.
-  //  // The reward points for visiting each Attraction.
-  //  //    Note: Attraction reward points can be gathered from RewardsCentral
+    //  TODO: Change this method to no longer return a List of Attractions.
+    //  Instead: Get the closest five tourist attractions to the user - no matter how far away they are.
+    //  Return a new JSON object that contains:
+    // Name of Tourist attraction,
+    // Tourist attractions lat/long,
+    // The user's location lat/long,
+    // The distance in miles between the user's location and each of the attractions.
+    // The reward points for visiting each Attraction.
+   //    Note: Attraction reward points can be gathered from RewardsCentral
   @GetMapping(value = GETNEARBYATTRACTIONS)
-  public Collection getNearbyAttractions(@RequestParam String userName) {
+  public Map<Location, Collection<GetNearbyAttractionDto>> getNearbyAttractions(@RequestParam String userName) {
 
     if (userName == null || userName.isBlank()) {
       logger.warn("error, username is mandatory. username: " + userName);
       throw new IllegalArgumentException("error, username is mandatory.");
     }
 
-    Collection<Attraction> attractions = tourGuideService.getNearbyAttractions(userName);
+    Map<Location, Collection<GetNearbyAttractionDto>> attractions = tourGuideService.getNearbyAttractions(userName);
     return attractions;
   }
   //

@@ -3,6 +3,7 @@ package tourGuide.service;
 import feign.FeignException;
 import tourGuide.client.LocationClient;
 import tourGuide.client.UserClient;
+import tourGuide.dto.GetNearbyAttractionDto;
 import tourGuide.exception.DataNotFoundException;
 import tourGuide.exception.ResourceNotFoundException;
 import tourGuide.helper.InternalTestHelper;
@@ -16,7 +17,6 @@ import tripPricer.Provider;
 import tripPricer.TripPricer;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -24,6 +24,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
@@ -38,24 +47,32 @@ public class TourGuideService {
   protected final Logger logger = LoggerFactory.getLogger(TourGuideService.class);
   protected final TripPricer tripPricer = new TripPricer();
 
+  private static final ExecutorService executorService = Executors.newFixedThreadPool(10);
+
   @Value("${tourGuide.testMode}")
   boolean testMode;
 
   private final LocationClient locationClient;
   private final UserClient userClient;
 
-  public TourGuideService(LocationClient locationClient, UserClient userClient) {
+  private final RewardsService rewardsService;
+
+  public TourGuideService(
+      LocationClient locationClient, UserClient userClient, RewardsService rewardsService) {
     this.locationClient = locationClient;
     this.userClient = userClient;
+    this.rewardsService = rewardsService;
+
+    logger.info("TestMode enabled");
+    logger.debug("Initializing users");
+    initializeInternalUsers();
+    logger.debug("Finished initializing users");
   }
 
   @PostConstruct
   void testModeInit() {
     if (testMode) {
-      logger.info("TestMode enabled");
-      logger.debug("Initializing users");
-      initializeInternalUsers();
-      logger.debug("Finished initializing users");
+
       tracker = new Tracker(this);
       addShutDownHook();
     }
@@ -98,8 +115,8 @@ public class TourGuideService {
    *
    * @return the list of users
    */
-  public List<User> getAllUsers() {
-    return new ArrayList<>(internalUserMap.values());
+  public CopyOnWriteArrayList<User> getAllUsers() {
+    return new CopyOnWriteArrayList<>(internalUserMap.values());
   }
 
   /**
@@ -138,18 +155,27 @@ public class TourGuideService {
     return providers;
   }
 
+  public void awaitTerminationAfterShutdown() {
+    executorService.shutdown();
+    try {
+      if (!executorService.awaitTermination(60, TimeUnit.SECONDS)) {
+        executorService.shutdownNow();
+      }
+    } catch (InterruptedException ex) {
+      executorService.shutdownNow();
+      Thread.currentThread().interrupt();
+    }
+  }
   /**
    * This method add the actual location as visitedLocation for the user.
    *
    * @param user the user
-   * @return the location
    */
-  public VisitedLocation trackUserLocation(User user) {
+  public void trackUserLocation(User user) throws ExecutionException, InterruptedException {
 
-    VisitedLocation visitedLocation = locationClient.addLocation(user.getUserId());
-        user.addToVisitedLocations(visitedLocation);
-    //    rewardsService.calculateRewards(user);
-    return visitedLocation;
+    CompletableFuture.supplyAsync(
+            () -> locationClient.addLocation(user.getUserId()), executorService)
+        .thenAccept(user::addToVisitedLocations);
   }
 
   /**
@@ -158,7 +184,17 @@ public class TourGuideService {
    * @param userName the username
    * @return a list with the 5 closest attraction in range
    */
-  public Collection<Attraction> getNearbyAttractions(String userName) {
+  public Map<Location, Collection<GetNearbyAttractionDto>> getNearbyAttractions(String userName) {
+
+    //  Instead: Get the closest five tourist attractions to the user - no matter how far away they
+    // are.
+    //  Return a new JSON object that contains:
+    // Name of Tourist attraction,
+    // Tourist attractions lat/long,
+    // The user's location lat/long,
+    // The distance in miles between the user's location and each of the attractions.
+    // The reward points for visiting each Attraction.
+    //    Note: Attraction reward points can be gathered from RewardsCentral
     try {
 
       User user = userClient.getUserByUsername(userName);
@@ -167,23 +203,27 @@ public class TourGuideService {
         logger.warn("Error, user :" + userName + " doesn't exist.");
         throw new DataNotFoundException("Error, user : " + userName + " doesn't exist.");
       }
-
-      VisitedLocation visitedLocation = locationClient.addLocation(user.getUserId());
+      UUID userId = user.getUserId();
+      VisitedLocation visitedLocation = locationClient.addLocation(userId);
 
       if (visitedLocation == null || visitedLocation.location() == null) {
         logger.warn(
             "Error, locationClient.addLocation returned null for user : "
                 + userName
                 + " user id :"
-                + user.getUserId());
-        throw new DataNotFoundException("Error, can't get Location for user : " + user.getUserId());
+                + userId);
+        throw new DataNotFoundException("Error, can't get Location for user : " + userId);
       }
 
       Collection<Attraction> nearbyAttractions =
           locationClient.getNearbyAttractions(
               visitedLocation.location().latitude(), visitedLocation.location().longitude());
 
-      return nearbyAttractions;
+      Collection<GetNearbyAttractionDto> dtoCollection =
+          rewardsService.calculateRewards(nearbyAttractions, userId);
+      Map<Location, Collection<GetNearbyAttractionDto>> response = new HashMap<>(1);
+      response.put(visitedLocation.location(), dtoCollection);
+      return response;
     } catch (FeignException.FeignClientException fce) {
       logger.error("Error, Feign client failed." + fce);
       throw new ResourceNotFoundException("Error, cant reach service.");
@@ -208,7 +248,7 @@ public class TourGuideService {
 
   // Database connection will be used for external users, but for testing purposes internal users
   // are provided and stored in memory
-  protected final Map<String, User> internalUserMap = new HashMap<>();
+  protected final Map<String, User> internalUserMap = new ConcurrentHashMap<>();
 
   protected void initializeInternalUsers() {
     IntStream.range(0, InternalTestHelper.getInternalUserNumber())

@@ -9,6 +9,7 @@ import tourGuide.service.TourGuideService;
 import tourGuide.user.User;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -103,7 +104,7 @@ class TourGuideControllerTest {
     // GIVEN
 
     // WHEN
-    when(tourGuideServiceMock.getNearbyAttractions(Mockito.any())).thenReturn(new ArrayList<>());
+    when(tourGuideServiceMock.getNearbyAttractions(Mockito.any())).thenReturn(new HashMap<>());
     // THEN
     mockMvc
         .perform(get(GETNEARBYATTRACTIONS).param("userName", validUserName))
