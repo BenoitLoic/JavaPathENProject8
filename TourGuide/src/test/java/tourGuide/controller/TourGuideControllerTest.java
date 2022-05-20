@@ -1,16 +1,19 @@
 package tourGuide.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import tourGuide.config.Url;
 import tourGuide.exception.DataNotFoundException;
 import tourGuide.exception.IllegalArgumentException;
+import tourGuide.model.Attraction;
 import tourGuide.model.Location;
+import tourGuide.model.UserReward;
 import tourGuide.model.VisitedLocation;
+import tourGuide.service.RewardsServiceImpl;
 import tourGuide.service.TourGuideService;
 import tourGuide.user.User;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.UUID;
+
+import java.util.*;
+
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mockito;
@@ -20,15 +23,13 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static tourGuide.config.Url.GETLOCATION;
-import static tourGuide.config.Url.GETNEARBYATTRACTIONS;
-import static tourGuide.config.Url.INDEX;
+import static tourGuide.config.Url.*;
 
 @WebMvcTest(controllers = TourGuideController.class)
 @AutoConfigureMockMvc
@@ -41,8 +42,19 @@ class TourGuideControllerTest {
       new VisitedLocation(UUID.randomUUID(), new Location(56d, 22d), date);
   private final User validUser =
       new User(userId, validUserName, "phoneNumberTest", "emailAddressTest");
+
+  private final Attraction attractionTest =
+      new Attraction(
+          "attractionNameTest",
+          "attractionCityTest",
+          "attractionStateTest",
+          UUID.randomUUID(),new Location(
+          22d,
+          56d),
+          null);
   @Autowired MockMvc mockMvc;
   @MockBean TourGuideService tourGuideServiceMock;
+  @MockBean RewardsServiceImpl rewardsServiceMock;
   @InjectMocks TourGuideController tourGuideController;
 
   private static final ObjectMapper MAPPER = new ObjectMapper();
@@ -61,8 +73,7 @@ class TourGuideControllerTest {
     when(tourGuideServiceMock.getUserLocation(Mockito.any())).thenReturn(visitedLocationTest);
     // THEN
     mockMvc
-        .perform(get(GETLOCATION)
-                .param("userName", "validUserName"))
+        .perform(get(GETLOCATION).param("userName", "validUserName"))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON));
   }
@@ -146,36 +157,53 @@ class TourGuideControllerTest {
   }
 
   @Test
-  void getRewardsValid() {
+  void getRewardsValid() throws Exception {
 
     // GIVEN
-
+    List<UserReward> userRewards =
+        Arrays.asList(
+            new UserReward(userId, visitedLocationTest, attractionTest, 5),
+            new UserReward(userId, visitedLocationTest, attractionTest, 5),
+            new UserReward(userId, visitedLocationTest, attractionTest, 5));
     // WHEN
-
+    when(tourGuideServiceMock.getUser(anyString())).thenReturn(validUser);
+    when(rewardsServiceMock.getRewards(Mockito.any())).thenReturn(userRewards);
     // THEN
-
+    mockMvc
+        .perform(get(Url.GETREWARDS).param("userName", validUserName))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON));
   }
 
   @Test
-  void getRewardsInvalid() {
+  void getRewardsInvalid() throws Exception {
 
     // GIVEN
 
     // WHEN
 
     // THEN
-
+    mockMvc
+        .perform(get(Url.GETREWARDS).param("userName", ""))
+        .andExpect(status().isBadRequest())
+        .andExpect(
+            result ->
+                assertTrue(result.getResolvedException() instanceof IllegalArgumentException));
   }
 
   @Test
-  void getRewardsWhenUserDoesntExist_ShouldThrowDataNotFoundException() {
+  void getRewardsWhenUserDoesntExist_ShouldThrowDataNotFoundException() throws Exception {
 
     // GIVEN
 
     // WHEN
-
+    doThrow(DataNotFoundException.class).when(tourGuideServiceMock).getUser(Mockito.anyString());
     // THEN
-
+    mockMvc
+        .perform(get(GETREWARDS).param("userName", validUserName))
+        .andExpect(status().isNotFound())
+        .andExpect(
+            result -> assertTrue(result.getResolvedException() instanceof DataNotFoundException));
   }
 
   // doit retourner toutes la derniere position connue pour tout les utilisateurs.

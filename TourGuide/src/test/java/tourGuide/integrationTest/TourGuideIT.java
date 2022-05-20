@@ -46,7 +46,7 @@ public class TourGuideIT {
     // GIVEN
     String userName = "internalUser0";
     // WHEN
-    when(locationClientMock.addLocation(Mockito.any())).thenReturn(visitedLocationTest);
+    when(locationClientMock.getLocation(Mockito.any())).thenReturn(visitedLocationTest);
     // THEN
     mockMvc
         .perform(MockMvcRequestBuilders.get(Url.GETLOCATION)

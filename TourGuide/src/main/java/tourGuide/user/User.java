@@ -5,27 +5,27 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import tourGuide.model.UserReward;
 import tourGuide.model.VisitedLocation;
 import tripPricer.Provider;
 
 public class User {
-  private  UUID                  userId;
-  private  String                userName;
-  private       String                phoneNumber;
-  private       String                emailAddress;
-  private       Date                  latestLocationTimestamp;
+  private UUID userId;
+  private String userName;
+  private String phoneNumber;
+  private String emailAddress;
+  private Date latestLocationTimestamp;
   private final List<VisitedLocation> visitedLocations = new ArrayList<>();
-  private final List<UserReward>      userRewards      = new ArrayList<>();
-  private       UserPreferences       userPreferences  = new UserPreferences();
-  private       List<Provider>        tripDeals        = new ArrayList<>();
+  private final List<UserReward> userRewards = new ArrayList<>();
+  private UserPreferences userPreferences = new UserPreferences();
+  private List<Provider> tripDeals = new ArrayList<>();
 
-  public User() {
-  }
+  public User() {}
 
   public User(UUID userId, String userName, String phoneNumber, String emailAddress) {
-    this.userId       = userId;
-    this.userName     = userName;
-    this.phoneNumber  = phoneNumber;
+    this.userId = userId;
+    this.userName = userName;
+    this.phoneNumber = phoneNumber;
     this.emailAddress = emailAddress;
   }
 
@@ -79,8 +79,7 @@ public class User {
     // et si == 0 on ajoute une nouvelle reward à l'utilisateur
     long count = 0L;
     for (UserReward r : userRewards) {
-      if (!r.attraction.attractionName().equals(
-              userReward.attraction.attractionName())) {
+      if (!r.attraction().attractionName().equals(userReward.attraction().attractionName())) {
         count++;
       }
     }
@@ -115,16 +114,28 @@ public class User {
 
   @Override
   public String toString() {
-    return "User{" +
-        "userId=" + userId +
-        ", userName='" + userName + '\'' +
-        ", phoneNumber='" + phoneNumber + '\'' +
-        ", emailAddress='" + emailAddress + '\'' +
-        ", latestLocationTimestamp=" + latestLocationTimestamp +
-        ", visitedLocations=" + visitedLocations +
-        ", userRewards=" + userRewards +
-        ", userPreferences=" + userPreferences +
-        ", tripDeals=" + tripDeals +
-        '}';
+    return "User{"
+        + "userId="
+        + userId
+        + ", userName='"
+        + userName
+        + '\''
+        + ", phoneNumber='"
+        + phoneNumber
+        + '\''
+        + ", emailAddress='"
+        + emailAddress
+        + '\''
+        + ", latestLocationTimestamp="
+        + latestLocationTimestamp
+        + ", visitedLocations="
+        + visitedLocations
+        + ", userRewards="
+        + userRewards
+        + ", userPreferences="
+        + userPreferences
+        + ", tripDeals="
+        + tripDeals
+        + '}';
   }
 }

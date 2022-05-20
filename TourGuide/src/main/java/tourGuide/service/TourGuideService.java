@@ -9,10 +9,10 @@ import tourGuide.exception.ResourceNotFoundException;
 import tourGuide.helper.InternalTestHelper;
 import tourGuide.model.Attraction;
 import tourGuide.model.Location;
+import tourGuide.model.UserReward;
 import tourGuide.model.VisitedLocation;
 import tourGuide.tracker.Tracker;
 import tourGuide.user.User;
-import tourGuide.user.UserReward;
 import tripPricer.Provider;
 import tripPricer.TripPricer;
 import java.time.LocalDateTime;
@@ -24,14 +24,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 import javax.annotation.PostConstruct;
@@ -47,7 +45,7 @@ public class TourGuideService {
   protected final Logger logger = LoggerFactory.getLogger(TourGuideService.class);
   protected final TripPricer tripPricer = new TripPricer();
 
-  private static final ExecutorService executorService = Executors.newFixedThreadPool(10);
+  private final ExecutorService executorService = Executors.newFixedThreadPool(100);
 
   @Value("${tourGuide.testMode}")
   boolean testMode;
@@ -95,7 +93,7 @@ public class TourGuideService {
    * @return the last visited location if exists, or the actual location
    */
   public VisitedLocation getUserLocation(User user) {
-    VisitedLocation visitedLocation = locationClient.addLocation(user.getUserId());
+    VisitedLocation visitedLocation = locationClient.getLocation(user.getUserId());
     return visitedLocation;
   }
 
@@ -106,8 +104,12 @@ public class TourGuideService {
    * @return the user
    */
   public User getUser(String userName) {
-
-    return internalUserMap.get(userName);
+    User user = internalUserMap.get(userName);
+    if (user == null) {
+      logger.warn("Error, username : " + userName + " doesn't exist.");
+      throw new DataNotFoundException("error user doesn't exist.");
+    }
+    return user;
   }
 
   /**
@@ -139,7 +141,7 @@ public class TourGuideService {
   public List<Provider> getTripDeals(User user) {
 
     int cumulativeRewardPoints =
-        user.getUserRewards().stream().mapToInt(i -> i.getRewardPoints()).sum();
+        user.getUserRewards().stream().mapToInt(UserReward::rewardPoints).sum();
 
     List<Provider> providers =
         tripPricer.getPrice(
@@ -158,7 +160,7 @@ public class TourGuideService {
   public void awaitTerminationAfterShutdown() {
     executorService.shutdown();
     try {
-      if (!executorService.awaitTermination(60, TimeUnit.SECONDS)) {
+      if (!executorService.awaitTermination(20, TimeUnit.MINUTES)) {
         executorService.shutdownNow();
       }
     } catch (InterruptedException ex) {
@@ -171,10 +173,10 @@ public class TourGuideService {
    *
    * @param user the user
    */
-  public void trackUserLocation(User user) throws ExecutionException, InterruptedException {
+  public void trackUserLocation(User user) {
 
     CompletableFuture.supplyAsync(
-            () -> locationClient.addLocation(user.getUserId()), executorService)
+            () -> locationClient.getLocation(user.getUserId()), executorService)
         .thenAccept(user::addToVisitedLocations);
   }
 
@@ -204,7 +206,7 @@ public class TourGuideService {
         throw new DataNotFoundException("Error, user : " + userName + " doesn't exist.");
       }
       UUID userId = user.getUserId();
-      VisitedLocation visitedLocation = locationClient.addLocation(userId);
+      VisitedLocation visitedLocation = locationClient.getLocation(userId);
 
       if (visitedLocation == null || visitedLocation.location() == null) {
         logger.warn(
@@ -220,7 +222,7 @@ public class TourGuideService {
               visitedLocation.location().latitude(), visitedLocation.location().longitude());
 
       Collection<GetNearbyAttractionDto> dtoCollection =
-          rewardsService.calculateRewards(nearbyAttractions, userId);
+          rewardsService.calculateRewardsPoints(nearbyAttractions, userId);
       Map<Location, Collection<GetNearbyAttractionDto>> response = new HashMap<>(1);
       response.put(visitedLocation.location(), dtoCollection);
       return response;
@@ -231,13 +233,7 @@ public class TourGuideService {
   }
 
   private void addShutDownHook() {
-    Runtime.getRuntime()
-        .addShutdownHook(
-            new Thread() {
-              public void run() {
-                tracker.stopTracking();
-              }
-            });
+    Runtime.getRuntime().addShutdownHook(new Thread(() -> tracker.stopTracking()));
   }
 
   /**********************************************************************************
@@ -271,13 +267,12 @@ public class TourGuideService {
   private void generateUserLocationHistory(User user) {
     IntStream.range(0, 3)
         .forEach(
-            i -> {
-              user.addToVisitedLocations(
-                  new VisitedLocation(
-                      user.getUserId(),
-                      new Location(generateRandomLatitude(), generateRandomLongitude()),
-                      getRandomTime()));
-            });
+            i ->
+                user.addToVisitedLocations(
+                    new VisitedLocation(
+                        user.getUserId(),
+                        new Location(generateRandomLatitude(), generateRandomLongitude()),
+                        getRandomTime())));
   }
 
   private double generateRandomLongitude() {

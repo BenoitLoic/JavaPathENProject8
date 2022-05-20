@@ -1,10 +1,13 @@
 package tourGuide.controller;
 
+import com.jsoniter.output.JsonStream;
 import tourGuide.dto.GetNearbyAttractionDto;
 import tourGuide.exception.DataNotFoundException;
 import tourGuide.exception.IllegalArgumentException;
 import tourGuide.model.Location;
+import tourGuide.model.UserReward;
 import tourGuide.model.VisitedLocation;
+import tourGuide.service.RewardsService;
 import tourGuide.service.TourGuideService;
 import tourGuide.user.User;
 import java.util.Collection;
@@ -16,15 +19,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import static tourGuide.config.Url.GETLOCATION;
-import static tourGuide.config.Url.GETNEARBYATTRACTIONS;
-import static tourGuide.config.Url.INDEX;
+
+import static tourGuide.config.Url.*;
 
 @RestController
 public class TourGuideController {
 
-  @Autowired private TourGuideService tourGuideService;
   private final Logger logger = LoggerFactory.getLogger(TourGuideController.class);
+  @Autowired  TourGuideService tourGuideService;
+  @Autowired  RewardsService rewardsService;
 
   @RequestMapping(value = INDEX)
   public String index() {
@@ -49,39 +52,40 @@ public class TourGuideController {
 
     return visitedLocation.location();
   }
-
-    //  TODO: Change this method to no longer return a List of Attractions.
-    //  Instead: Get the closest five tourist attractions to the user - no matter how far away they are.
-    //  Return a new JSON object that contains:
-    // Name of Tourist attraction,
-    // Tourist attractions lat/long,
-    // The user's location lat/long,
-    // The distance in miles between the user's location and each of the attractions.
-    // The reward points for visiting each Attraction.
-   //    Note: Attraction reward points can be gathered from RewardsCentral
+  
   @GetMapping(value = GETNEARBYATTRACTIONS)
-  public Map<Location, Collection<GetNearbyAttractionDto>> getNearbyAttractions(@RequestParam String userName) {
+  public Map<Location, Collection<GetNearbyAttractionDto>> getNearbyAttractions(
+      @RequestParam String userName) {
 
     if (userName == null || userName.isBlank()) {
       logger.warn("error, username is mandatory. username: " + userName);
       throw new IllegalArgumentException("error, username is mandatory.");
     }
 
-    Map<Location, Collection<GetNearbyAttractionDto>> attractions = tourGuideService.getNearbyAttractions(userName);
+    Map<Location, Collection<GetNearbyAttractionDto>> attractions =
+        tourGuideService.getNearbyAttractions(userName);
     return attractions;
   }
-  //
-  //  /**
-  //   * This method get the reward points owned by the user.
-  //   *
-  //   * @param userName the user's userName
-  //   * @return the reward points as Json
-  //   */
-  //  @GetMapping(value = GETREWARDS)
-  //  public String getRewards(@RequestParam String userName) {
-  //    return JsonStream.serialize(tourGuideService.getUserRewards(getUser(userName)));
-  //  }
-  //
+
+  /**
+   * This method get the reward points owned by the user.
+   *
+   * @param userName the user's userName
+   * @return the reward points as Json
+   */
+  @GetMapping(value = GETREWARDS)
+  public Collection<UserReward> getRewards(@RequestParam String userName) {
+
+    if (userName == null || userName.isBlank()) {
+      logger.warn("error, username is mandatory. username: " + userName);
+      throw new IllegalArgumentException("error, username is mandatory.");
+    }
+
+    User user = tourGuideService.getUser(userName);
+
+    return rewardsService.getRewards(user);
+  }
+
   //  /**
   //   * This method get a list of every user's most recent location as JSON
   //   *

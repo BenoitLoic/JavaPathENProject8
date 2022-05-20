@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @FeignClient(value = "${location-service.name}", url = "${location-service.url}")
 public interface LocationClient {
   @RequestMapping(method = RequestMethod.POST, value = "/location/add")
-  VisitedLocation addLocation(@RequestParam UUID userId);
+  VisitedLocation getLocation(@RequestParam UUID userId);
 
   @RequestMapping(method = RequestMethod.GET, value = "/attraction/getNearby")
   Collection<Attraction> getNearbyAttractions(
