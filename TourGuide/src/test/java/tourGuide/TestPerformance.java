@@ -41,7 +41,7 @@ public class TestPerformance {
 
   @BeforeAll
   static void beforeAll() {
-    InternalTestHelper.setInternalUserNumber(50);
+    InternalTestHelper.setInternalUserNumber(100);
     java.util.Locale.setDefault(java.util.Locale.US);
   }
 
@@ -67,7 +67,7 @@ public class TestPerformance {
    *     highVolumeGetRewards: 100,000 users within 20 minutes:
    *          assertTrue(TimeUnit.MINUTES.toSeconds(20) >= TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()));
    */
-  @Disabled
+
   @Test
   public void highVolumeTrackLocation() {
 
@@ -98,7 +98,6 @@ public class TestPerformance {
         TimeUnit.MINUTES.toSeconds(15) >= TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()));
   }
 
-  @Disabled
   @Test
   public void highVolumeGetRewards() {
     GpsUtil gpsUtil = new GpsUtil();
@@ -113,25 +112,17 @@ public class TestPerformance {
     //    TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
 
     gpsUtil.location.Attraction temp = gpsUtil.getAttractions().get(0);
-    Attraction attraction =
-        new Attraction(
-            temp.attractionName,
-            temp.city,
-            temp.state,
-            temp.attractionId,
-            new Location(temp.latitude, temp.longitude),
-            null);
+
     List<User> allUsers = tourGuideService.getAllUsers();
     allUsers.forEach(
         u ->
             u.addToVisitedLocations(
                 new VisitedLocation(
-                    u.getUserId(),
-                    new Location(
-                        attraction.location().longitude(), attraction.location().latitude()),
-                    new Date())));
+                    u.getUserId(), new Location(temp.longitude, temp.latitude), new Date())));
 
     allUsers.forEach(u -> rewardsService.getRewards(u));
+
+    rewardsService.awaitTerminationAfterShutdown();
 
     for (User user : allUsers) {
       assertTrue(user.getUserRewards().size() > 0);

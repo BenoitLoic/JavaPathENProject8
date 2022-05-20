@@ -52,7 +52,7 @@ public class TourGuideController {
 
     return visitedLocation.location();
   }
-  
+
   @GetMapping(value = GETNEARBYATTRACTIONS)
   public Map<Location, Collection<GetNearbyAttractionDto>> getNearbyAttractions(
       @RequestParam String userName) {

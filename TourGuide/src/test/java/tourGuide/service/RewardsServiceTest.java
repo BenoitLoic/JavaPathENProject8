@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -53,7 +54,7 @@ class RewardsServiceTest {
 
 
   @Test
-  void getRewardsShouldCallRewardClient1Time() {
+  void getRewardsShouldCallRewardClient1Time() throws InterruptedException {
 
     // GIVEN
     User userMock = new User(userId, "userNameTest", "phoneTest", "emailTest");
@@ -66,13 +67,15 @@ class RewardsServiceTest {
         .thenReturn(new UserReward(userId, visitedLocationTest, attractionTest, 50));
     // THEN
     Collection<UserReward> actual = rewardsService.getRewards(userMock);
+    TimeUnit.MILLISECONDS.sleep(5);
+    verify(rewardClientMock, times(1)).addUserReward(userId, visitedLocationTest);
     assertThat(actual.size()).isEqualTo(1);
     assertThat(actual).isEqualTo(expected);
-    verify(rewardClientMock, times(1)).addUserReward(userId, visitedLocationTest);
+
   }
 
   @Test
-  void getRewardsShouldCallRewardClient5Times() {
+  void getRewardsShouldCallRewardClient5Times() throws InterruptedException {
 
     // GIVEN
     User userMock = new User(userId, "userNameTest", "phoneTest", "emailTest");
@@ -93,9 +96,11 @@ class RewardsServiceTest {
         .thenReturn(new UserReward(userId, visitedLocationTest, attractionTest, 50));
     // THEN
     Collection<UserReward> actual = rewardsService.getRewards(userMock);
+    TimeUnit.MILLISECONDS.sleep(5);
+    verify(rewardClientMock, times(5)).addUserReward(userId, visitedLocationTest);
     assertThat(actual.size()).isEqualTo(5);
     assertThat(actual).isEqualTo(expected);
-    verify(rewardClientMock, times(5)).addUserReward(userId, visitedLocationTest);
+
   }
 
 

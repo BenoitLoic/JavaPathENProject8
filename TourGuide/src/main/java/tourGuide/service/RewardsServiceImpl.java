@@ -10,6 +10,10 @@ import tourGuide.exception.ResourceNotFoundException;
 import tourGuide.model.Attraction;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,24 +25,13 @@ import tourGuide.user.User;
 public class RewardsServiceImpl implements RewardsService {
   private static final double STATUTE_MILES_PER_NAUTICAL_MILE = 1.15077945;
 
-  // proximity in miles
-  private final int defaultProximityBuffer = 10;
-  private int proximityBuffer = defaultProximityBuffer;
-  private final int attractionProximityRange = 200;
+  private final Logger logger = LoggerFactory.getLogger(RewardsServiceImpl.class);
+  private final ExecutorService threadPool = Executors.newFixedThreadPool(200);
 
   @Autowired RewardClient rewardClient;
   @Autowired ObjectMapper mapper;
-  private final Logger logger = LoggerFactory.getLogger(RewardsServiceImpl.class);
 
 
-  /** Setter for proximity buffer */
-  public void setProximityBuffer(int proximityBuffer) {
-    this.proximityBuffer = proximityBuffer;
-  }
-
-  public void setDefaultProximityBuffer() {
-    proximityBuffer = defaultProximityBuffer;
-  }
 
   @Override
   public Collection<GetNearbyAttractionDto> calculateRewardsPoints(
@@ -66,8 +59,6 @@ public class RewardsServiceImpl implements RewardsService {
   @Override
   public Collection<UserReward> getRewards(User user) {
 
-
-
     List<UserReward> userRewardsCopy = new ArrayList<>(user.getUserRewards().size());
     Collections.copy(userRewardsCopy, user.getUserRewards());
 
@@ -76,19 +67,29 @@ public class RewardsServiceImpl implements RewardsService {
     List<UserReward> userRewardsReturnList = new ArrayList<>();
 
     for (VisitedLocation visitedLocation : user.getVisitedLocations()) {
-      UserReward userReward = rewardClient.addUserReward(user.getUserId(), visitedLocation);
-      if (userReward==null){
-        logger.warn("Error, reward client returned null.");
-        throw new ResourceNotFoundException("Error calling client.");
-      }
-      userRewardsReturnList.add(userReward);
-      // check if reward already exist, if not add
-      if (!attractionIds.contains(userReward.attraction().attractionId())) {
-        user.addUserReward(userReward);
-      }
+      CompletableFuture.supplyAsync(
+              () -> rewardClient.addUserReward(user.getUserId(), visitedLocation), threadPool)
+          .thenAccept(
+              userReward -> {
+                userRewardsReturnList.add(userReward);
+                if (!attractionIds.contains(userReward.attraction().attractionId())) {
+                  user.addUserReward(userReward);
+                }
+              });
     }
 
     return userRewardsReturnList;
   }
 
+  public void awaitTerminationAfterShutdown() {
+    threadPool.shutdown();
+    try {
+      if (!threadPool.awaitTermination(20, TimeUnit.MINUTES)) {
+        threadPool.shutdownNow();
+      }
+    } catch (InterruptedException ex) {
+      threadPool.shutdownNow();
+      Thread.currentThread().interrupt();
+    }
+  }
 }
