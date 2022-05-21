@@ -1,6 +1,5 @@
 package tourGuide.controller;
 
-import com.jsoniter.output.JsonStream;
 import tourGuide.dto.GetNearbyAttractionDto;
 import tourGuide.exception.DataNotFoundException;
 import tourGuide.exception.IllegalArgumentException;
@@ -12,6 +11,8 @@ import tourGuide.service.TourGuideService;
 import tourGuide.user.User;
 import java.util.Collection;
 import java.util.Map;
+import java.util.UUID;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,9 +63,7 @@ public class TourGuideController {
       throw new IllegalArgumentException("error, username is mandatory.");
     }
 
-    Map<Location, Collection<GetNearbyAttractionDto>> attractions =
-        tourGuideService.getNearbyAttractions(userName);
-    return attractions;
+    return tourGuideService.getNearbyAttractions(userName);
   }
 
   /**
@@ -86,27 +85,17 @@ public class TourGuideController {
     return rewardsService.getRewards(user);
   }
 
-  //  /**
-  //   * This method get a list of every user's most recent location as JSON
-  //   *
-  //   * @return JSON mapping of userId : Locations
-  //   */
-  //  @GetMapping(value = GETALLCURRENTLOCATIONS)
-  //  public String getAllCurrentLocations() {
-  //    // TODO: Get a list of every user's most recent location as JSON
-  //    // - Note: does not use gpsUtil to query for their current location,
-  //    //        but rather gathers the user's current location from their stored location history.
-  //    //
-  //    // Return object should be the just a  similar to:
-  //    //     {
-  //    //        "019b04a9-067a-4c76-8817-ee75088c3822":
-  // {"longitude":-48.188821,"latitude":74.84371}
-  //    //        ...
-  //    //     }
-  //
-  //    return JsonStream.serialize("");
-  //  }
-  //
+    /**
+     * This method get a list of every user's most recent location as JSON
+     *
+     * @return JSON mapping of userId : Locations
+     */
+    @GetMapping(value = GETALLCURRENTLOCATIONS)
+    public Map<UUID, Location> getAllCurrentLocations() {
+
+      return tourGuideService.getAllCurrentLocations();
+    }
+
   //  /**
   //   * This method get a list of TripDeals (providers) for given user. TripDeals are based on user
   //   * preferences.

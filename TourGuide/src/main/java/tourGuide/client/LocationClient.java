@@ -1,8 +1,10 @@
 package tourGuide.client;
 
 import tourGuide.model.Attraction;
+import tourGuide.model.Location;
 import tourGuide.model.VisitedLocation;
 import java.util.Collection;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,4 +23,7 @@ public interface LocationClient {
   @RequestMapping(method = RequestMethod.GET, value = "/attraction/getNearby")
   Collection<Attraction> getNearbyAttractions(
       @RequestParam Double latitude, @RequestParam Double longitude);
+
+  @RequestMapping(method = RequestMethod.GET, value = "/getStats")
+  Map<UUID, Location> getAllLastLocation();
 }

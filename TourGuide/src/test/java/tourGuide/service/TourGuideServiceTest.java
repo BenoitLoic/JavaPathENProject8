@@ -10,12 +10,9 @@ import tourGuide.model.Attraction;
 import tourGuide.model.Location;
 import tourGuide.model.VisitedLocation;
 import tourGuide.user.User;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+
+import java.util.*;
+
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -168,6 +165,16 @@ class TourGuideServiceTest {
     // THEN
     assertThrows(
         ResourceNotFoundException.class, () -> tourGuideService.getNearbyAttractions("username"));
+  }
+
+  @Test
+  void getAllCurrentLocations() {
+
+    // WHEN
+    when(locationClientMock.getAllLastLocation()).thenReturn(new HashMap<>());
+    // THEN
+    tourGuideService.getAllCurrentLocations();
+    verify(locationClientMock, times(1)).getAllLastLocation();
   }
 
   @Disabled

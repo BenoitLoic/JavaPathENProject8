@@ -1,13 +1,18 @@
 package tourGuide.integrationTest;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import feign.FeignException;
+import org.hamcrest.core.IsEqual;
 import tourGuide.client.LocationClient;
 import tourGuide.config.Url;
 import tourGuide.exception.DataNotFoundException;
 import tourGuide.exception.IllegalArgumentException;
+import tourGuide.exception.ResourceNotFoundException;
 import tourGuide.model.Location;
 import tourGuide.model.VisitedLocation;
-import java.util.Date;
-import java.util.UUID;
+
+import java.util.*;
+
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,11 +25,16 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.StatusResultMatchersExtensionsKt.isEqualTo;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -37,6 +47,7 @@ public class TourGuideIT {
       new VisitedLocation(userId, new Location(50.54, 20.), dateTest);
 
   @Autowired MockMvc mockMvc;
+  @Autowired ObjectMapper objectMapper;
 
   @MockBean LocationClient locationClientMock;
 
@@ -49,24 +60,67 @@ public class TourGuideIT {
     when(locationClientMock.getLocation(Mockito.any())).thenReturn(visitedLocationTest);
     // THEN
     mockMvc
-        .perform(MockMvcRequestBuilders.get(Url.GETLOCATION)
-                .param("userName", userName))
+        .perform(get(Url.GETLOCATION).param("userName", userName))
         .andExpect(MockMvcResultMatchers.status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(jsonPath("$.latitude", is(20.0)))
         .andExpect(jsonPath("$.longitude", is(50.54)));
 
     mockMvc
-            .perform(MockMvcRequestBuilders.get(Url.GETLOCATION)
-                    .param("userName", ""))
-            .andExpect(status().isBadRequest())
-            .andExpect(result -> assertThat(result.getResolvedException() instanceof IllegalArgumentException).isTrue());
+        .perform(get(Url.GETLOCATION).param("userName", ""))
+        .andExpect(status().isBadRequest())
+        .andExpect(
+            result ->
+                assertThat(result.getResolvedException() instanceof IllegalArgumentException)
+                    .isTrue());
 
     mockMvc
-            .perform(MockMvcRequestBuilders.get(Url.GETLOCATION)
-                    .param("userName", "UNKNOWN_USER"))
-            .andExpect(status().isNotFound())
-            .andExpect(result -> assertThat(result.getResolvedException() instanceof DataNotFoundException).isTrue());
+        .perform(get(Url.GETLOCATION).param("userName", "UNKNOWN_USER"))
+        .andExpect(status().isNotFound())
+        .andExpect(
+            result ->
+                assertThat(result.getResolvedException() instanceof DataNotFoundException)
+                    .isTrue());
+  }
 
+  @Test
+  void getAllCurrentLocations() throws Exception {
+
+    // GIVEN
+    UUID userId1 = UUID.randomUUID();
+    UUID userId2 = UUID.randomUUID();
+    UUID userId3 = UUID.randomUUID();
+    UUID userId4 = UUID.randomUUID();
+    UUID userId5 = UUID.randomUUID();
+    Map<UUID, Location> uuidLocationMap = new LinkedHashMap<>();
+    uuidLocationMap.put(userId1, new Location(1d, 1d));
+    uuidLocationMap.put(userId2, new Location(1d, 1d));
+    uuidLocationMap.put(userId3, new Location(1d, 1d));
+    uuidLocationMap.put(userId4, new Location(1d, 1d));
+    uuidLocationMap.put(userId5, new Location(1d, 1d));
+    String json = objectMapper.writeValueAsString(uuidLocationMap);
+    // WHEN
+    when(locationClientMock.getAllLastLocation()).thenReturn(uuidLocationMap);
+    // THEN
+    mockMvc
+        .perform(get(Url.GETALLCURRENTLOCATIONS))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.size()", IsEqual.equalTo(5)))
+        .andExpect(result -> assertThat(result.getResponse().getContentAsString()).isEqualTo(json));
+  }
+
+  @Test
+  void getAllCurrentLocations_ShouldThrowDataNotFoundException() throws Exception {
+
+    // WHEN
+when(locationClientMock.getAllLastLocation()).thenThrow(FeignException.class);
+    // THEN
+    mockMvc
+        .perform(get(Url.GETALLCURRENTLOCATIONS))
+        .andExpect(status().isInternalServerError())
+        .andExpect(
+            result ->
+                assertTrue(result.getResolvedException() instanceof ResourceNotFoundException));
   }
 }

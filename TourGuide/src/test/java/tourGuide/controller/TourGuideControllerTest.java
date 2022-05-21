@@ -1,9 +1,12 @@
 package tourGuide.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hamcrest.Matcher;
+import org.mockito.internal.hamcrest.HamcrestArgumentMatcher;
 import tourGuide.config.Url;
 import tourGuide.exception.DataNotFoundException;
 import tourGuide.exception.IllegalArgumentException;
+import tourGuide.exception.ResourceNotFoundException;
 import tourGuide.model.Attraction;
 import tourGuide.model.Location;
 import tourGuide.model.UserReward;
@@ -24,11 +27,12 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.hamcrest.EasyMock2Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static tourGuide.config.Url.*;
 
 @WebMvcTest(controllers = TourGuideController.class)
@@ -48,9 +52,8 @@ class TourGuideControllerTest {
           "attractionNameTest",
           "attractionCityTest",
           "attractionStateTest",
-          UUID.randomUUID(),new Location(
-          22d,
-          56d),
+          UUID.randomUUID(),
+          new Location(22d, 56d),
           null);
   @Autowired MockMvc mockMvc;
   @MockBean TourGuideService tourGuideServiceMock;
@@ -210,14 +213,50 @@ class TourGuideControllerTest {
   // cette position doit etre récupéré dans les données sauvegardés de l'utilisateur.
   // la réponse est en JSON avec un mapping -> userId : position
   @Test
-  void getAllCurrentLocationsShouldReturn2Positions() {
+  void getAllCurrentLocationsValid() throws Exception {
 
     // GIVEN
 
     // WHEN
-
+    when(tourGuideServiceMock.getAllCurrentLocations()).thenReturn(new HashMap<>());
     // THEN
+    mockMvc
+        .perform(get(GETALLCURRENTLOCATIONS))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+  }
 
+  @Test
+  void getAllCurrentLocations_ShouldReturnTheCorrectMapping() throws Exception {
+
+    // GIVEN
+
+    Map<UUID, Location> returnMap = new HashMap<>();
+    returnMap.put(userId, new Location(5d, 1d));
+    String json = MAPPER.writeValueAsString(returnMap);
+
+    // WHEN
+    when(tourGuideServiceMock.getAllCurrentLocations()).thenReturn(returnMap);
+    // THEN
+    mockMvc
+        .perform(get(GETALLCURRENTLOCATIONS))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.size()", org.hamcrest.core.IsEqual.equalTo(1)))
+        .andExpect(result -> assertEquals(result.getResponse().getContentAsString(), json));
+  }
+
+  @Test
+  void getAllCurrentLocations_ShouldThrowResourceNotFoundException() throws Exception {
+
+    doThrow(ResourceNotFoundException.class).when(tourGuideServiceMock).getAllCurrentLocations();
+
+    mockMvc
+        .perform(get(GETALLCURRENTLOCATIONS))
+        .andExpect(status().isInternalServerError())
+        .andExpect(
+            result ->
+                assertTrue(result.getResolvedException() instanceof ResourceNotFoundException));
   }
 
   @Test

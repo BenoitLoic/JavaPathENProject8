@@ -1,5 +1,6 @@
 package tourGuide.service;
 
+import feign.Feign;
 import feign.FeignException;
 import tourGuide.client.LocationClient;
 import tourGuide.client.UserClient;
@@ -93,8 +94,7 @@ public class TourGuideService {
    * @return the last visited location if exists, or the actual location
    */
   public VisitedLocation getUserLocation(User user) {
-    VisitedLocation visitedLocation = locationClient.getLocation(user.getUserId());
-    return visitedLocation;
+    return locationClient.getLocation(user.getUserId());
   }
 
   /**
@@ -229,6 +229,20 @@ public class TourGuideService {
     } catch (FeignException.FeignClientException fce) {
       logger.error("Error, Feign client failed." + fce);
       throw new ResourceNotFoundException("Error, cant reach service.");
+    }
+  }
+
+  /**
+   * This method call location-service to retrieve the last known location of all user.
+   *
+   * @return a map with the user id : last location saved
+   */
+  public Map<UUID, Location> getAllCurrentLocations() {
+    try {
+      return locationClient.getAllLastLocation();
+    } catch (feign.FeignException fre) {
+      logger.error("Error, fail to connect to location client.");
+      throw new ResourceNotFoundException("Error, fail to connect to client.");
     }
   }
 
