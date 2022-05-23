@@ -1,8 +1,8 @@
-package tourGuide;
 
 import gpsUtil.GpsUtil;
 import org.junit.jupiter.api.*;
 import org.springframework.test.context.ActiveProfiles;
+import tourGuide.Application;
 import tourGuide.client.LocationClient;
 import tourGuide.client.UserClient;
 import tourGuide.helper.InternalTestHelper;
@@ -28,8 +28,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@SpringBootTest
-@ActiveProfiles("test")
+@SpringBootTest(classes = Application.class)
+ @ActiveProfiles("test")
 @EnableConfigurationProperties
 @ExtendWith(SpringExtension.class)
 public class TestPerformance {
@@ -41,7 +41,7 @@ public class TestPerformance {
 
   @BeforeAll
   static void beforeAll() {
-    InternalTestHelper.setInternalUserNumber(100);
+    InternalTestHelper.setInternalUserNumber(10);
     java.util.Locale.setDefault(java.util.Locale.US);
   }
 
@@ -68,7 +68,7 @@ public class TestPerformance {
    *          assertTrue(TimeUnit.MINUTES.toSeconds(20) >= TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()));
    */
 
-  @Disabled
+
   @Test
   public void highVolumeTrackLocation() {
 
@@ -80,7 +80,6 @@ public class TestPerformance {
     stopWatch.start();
     CopyOnWriteArrayList<User> allUsers = tourGuideService.getAllUsers();
     for (User user : allUsers) {
-
       tourGuideService.trackUserLocation(user);
     }
 
@@ -99,7 +98,7 @@ public class TestPerformance {
         TimeUnit.MINUTES.toSeconds(15) >= TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()));
   }
 
-  @Disabled
+
   @Test
   public void highVolumeGetRewards() {
     GpsUtil gpsUtil = new GpsUtil();

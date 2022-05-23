@@ -12,6 +12,7 @@ import tourGuide.model.VisitedLocation;
 import tourGuide.user.User;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,6 +23,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import tourGuide.user.UserPreferences;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyDouble;
@@ -33,9 +36,9 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class TourGuideServiceTest {
 
-  private UUID userId;
+  private final UUID userId = UUID.randomUUID();
   private VisitedLocation visitedLocationTest;
-
+  private User userTest;
   @Mock LocationClient locationClientMock;
   @Mock UserClient userClientMock;
   @Mock RewardsServiceImpl rewardsServiceMock;
@@ -43,7 +46,7 @@ class TourGuideServiceTest {
 
   @BeforeEach
   void setUp() {
-    userId = UUID.randomUUID();
+    userTest = new User(userId, "username", "phone", "email");
     Date dateTest = new Date();
     visitedLocationTest = new VisitedLocation(userId, new Location(50., 20.), dateTest);
     tourGuideService.testMode = false;
@@ -56,12 +59,10 @@ class TourGuideServiceTest {
 
     // GIVEN
 
-    User user = new User(userId, "userNameTest", "phoneTest", "emailAddressTest");
-    System.out.println(visitedLocationTest.userId());
     // WHEN
     Mockito.when(locationClientMock.getLocation(userId)).thenReturn(visitedLocationTest);
     // THEN
-    VisitedLocation actual = tourGuideService.getUserLocation(user);
+    VisitedLocation actual = tourGuideService.getUserLocation(userTest);
     Assertions.assertThat(actual).isEqualTo(visitedLocationTest);
     verify(locationClientMock, times(1)).getLocation(userId);
   }
@@ -80,7 +81,7 @@ class TourGuideServiceTest {
             attractionId1,
             new Location(120d, 50d),
             5d);
-    User userTest = new User(userId, "username", "phone", "email");
+
     // WHEN
     Mockito.when(userClientMock.getUserByUsername(Mockito.anyString())).thenReturn(userTest);
 
@@ -97,7 +98,6 @@ class TourGuideServiceTest {
                 new GetNearbyAttractionDto(),
                 new GetNearbyAttractionDto()));
 
-    Map<Location, Collection<GetNearbyAttractionDto>> actual =
         tourGuideService.getNearbyAttractions("username");
     // THEN
     verify(userClientMock, times(1)).getUserByUsername("username");
@@ -123,31 +123,10 @@ class TourGuideServiceTest {
       getNearbyAttractions_WhenLocationClientReturnNullVisitedLocation_ShouldThrowDataNotFoundException() {
 
     // GIVEN
-    UUID attractionId1 = UUID.randomUUID();
-    Attraction attraction1 =
-        new Attraction(
-            "attractionNameTest1",
-            "cityTest",
-            "stateTest",
-            attractionId1,
-            new Location(120d, 50d),
-            5d);
-    UUID attractionId2 = UUID.randomUUID();
-    Attraction attraction2 =
-        new Attraction(
-            "attractionNameTest2",
-            "cityTest",
-            "stateTest",
-            attractionId2,
-            new Location(20d, 50d),
-            2d);
 
-    List<Attraction> attractions =
-        Arrays.asList(attraction1, attraction2, attraction1, attraction2, attraction1);
     // WHEN
     when(userClientMock.getUserByUsername(Mockito.anyString()))
         .thenReturn(new User(userId, "username", "phone", "email"));
-    //    when(locationClientMock.addLocation(any())).thenReturn(null);
 
     // THEN
     assertThrows(
@@ -177,6 +156,21 @@ class TourGuideServiceTest {
     verify(locationClientMock, times(1)).getAllLastLocation();
   }
 
+  @Test
+  void getTripDeals() {
+
+    // GIVEN
+    UserPreferences userPreferences = new UserPreferences();
+    userPreferences.setTripDuration(5);
+    userPreferences.setNumberOfAdults(2);
+    userPreferences.setNumberOfChildren(18);
+
+    // WHEN
+
+    // THEN
+
+  }
+
   @Disabled
   @Test
   void getUserRewards() {}
@@ -192,10 +186,6 @@ class TourGuideServiceTest {
   @Disabled
   @Test
   void addUser() {}
-
-  @Disabled
-  @Test
-  void getTripDeals() {}
 
   @Disabled
   @Test

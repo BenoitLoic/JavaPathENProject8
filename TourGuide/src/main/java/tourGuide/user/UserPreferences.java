@@ -6,7 +6,7 @@ import javax.money.Monetary;
 import org.javamoney.moneta.Money;
 
 
-public class UserPreferences {
+public class UserPreferences implements Cloneable {
 
   private       int          attractionProximity = Integer.MAX_VALUE;
   private final CurrencyUnit currency            = Monetary.getCurrency("USD");
@@ -18,6 +18,8 @@ public class UserPreferences {
   private int          numberOfChildren    = 0;
 
   public UserPreferences() {
+  }
+  public UserPreferences(UserPreferences copy) {
   }
 
   public void setAttractionProximity(int attractionProximity) {
@@ -75,5 +77,6 @@ public class UserPreferences {
   public void setNumberOfChildren(int numberOfChildren) {
     this.numberOfChildren = numberOfChildren;
   }
+
 
 }

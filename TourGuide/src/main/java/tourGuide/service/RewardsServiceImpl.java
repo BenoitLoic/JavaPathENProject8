@@ -1,6 +1,7 @@
 package tourGuide.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import feign.FeignException;
 import io.netty.util.internal.logging.InternalLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,8 +32,6 @@ public class RewardsServiceImpl implements RewardsService {
   @Autowired RewardClient rewardClient;
   @Autowired ObjectMapper mapper;
 
-
-
   @Override
   public Collection<GetNearbyAttractionDto> calculateRewardsPoints(
       Collection<Attraction> attractionCollection, UUID userId) {
@@ -61,21 +60,27 @@ public class RewardsServiceImpl implements RewardsService {
 
     List<UserReward> userRewardsCopy = new ArrayList<>(user.getUserRewards().size());
     Collections.copy(userRewardsCopy, user.getUserRewards());
-
+logger.info("1er");
     List<UUID> attractionIds = new ArrayList<>();
     userRewardsCopy.forEach(ur -> attractionIds.add(ur.attraction().attractionId()));
     List<UserReward> userRewardsReturnList = new ArrayList<>();
 
     for (VisitedLocation visitedLocation : user.getVisitedLocations()) {
-      CompletableFuture.supplyAsync(
-              () -> rewardClient.addUserReward(user.getUserId(), visitedLocation), threadPool)
-          .thenAccept(
-              userReward -> {
-                userRewardsReturnList.add(userReward);
-                if (!attractionIds.contains(userReward.attraction().attractionId())) {
-                  user.addUserReward(userReward);
-                }
-              });
+      logger.info("before try");
+      try {
+        CompletableFuture.supplyAsync(
+                () -> rewardClient.addUserReward(user.getUserId(), visitedLocation), threadPool)
+            .thenAccept(
+                userReward -> {
+                  userRewardsReturnList.add(userReward);
+                  if (!attractionIds.contains(userReward.attraction().attractionId())) {
+                    user.addUserReward(userReward);
+                  }
+                });
+      } catch (FeignException.FeignClientException fce) {
+        logger.error("Error, Feign client failed." + fce);
+        throw new ResourceNotFoundException("Error, cant reach service.");
+      }
     }
 
     return userRewardsReturnList;
@@ -84,7 +89,7 @@ public class RewardsServiceImpl implements RewardsService {
   public void awaitTerminationAfterShutdown() {
     threadPool.shutdown();
     try {
-      if (!threadPool.awaitTermination(20, TimeUnit.MINUTES)) {
+      if (!threadPool.awaitTermination(30, TimeUnit.MINUTES)) {
         threadPool.shutdownNow();
       }
     } catch (InterruptedException ex) {

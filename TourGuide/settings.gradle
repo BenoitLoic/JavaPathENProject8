@@ -8,3 +8,8 @@
  */
 
 rootProject.name = 'TourGuide'
+include 'src:test:integrationTest'
+findProject(':src:test:integrationTest')?.name = 'integrationTest'
+include 'src:performanceTest'
+findProject(':src:performanceTest')?.name = 'performanceTest'
+

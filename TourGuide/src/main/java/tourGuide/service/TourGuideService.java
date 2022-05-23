@@ -39,13 +39,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+@edu.umd.cs.findbugs.annotations.SuppressFBWarnings("DMI_RANDOM_USED_ONLY_ONCE")
 @Service
 public class TourGuideService {
   public Tracker tracker;
-  private static final String tripPricerApiKey = "test-server-api-key";
+
+  @Value("${tripPricer.apiKey}")
+  private static String tripPricerApiKey;
+
   protected final Logger logger = LoggerFactory.getLogger(TourGuideService.class);
   protected final TripPricer tripPricer = new TripPricer();
-
   private final ExecutorService executorService = Executors.newFixedThreadPool(100);
 
   @Value("${tourGuide.testMode}")
@@ -53,7 +56,6 @@ public class TourGuideService {
 
   private final LocationClient locationClient;
   private final UserClient userClient;
-
   private final RewardsService rewardsService;
 
   public TourGuideService(
@@ -71,7 +73,6 @@ public class TourGuideService {
   @PostConstruct
   void testModeInit() {
     if (testMode) {
-
       tracker = new Tracker(this);
       addShutDownHook();
     }
@@ -94,7 +95,10 @@ public class TourGuideService {
    * @return the last visited location if exists, or the actual location
    */
   public VisitedLocation getUserLocation(User user) {
-    return locationClient.getLocation(user.getUserId());
+
+           user.addToVisitedLocations( locationClient.getLocation(user.getUserId()));
+
+    return user.getLastVisitedLocation();
   }
 
   /**
@@ -226,7 +230,7 @@ public class TourGuideService {
       Map<Location, Collection<GetNearbyAttractionDto>> response = new HashMap<>(1);
       response.put(visitedLocation.location(), dtoCollection);
       return response;
-    } catch (FeignException.FeignClientException fce) {
+    } catch (feign.FeignException fce) {
       logger.error("Error, Feign client failed." + fce);
       throw new ResourceNotFoundException("Error, cant reach service.");
     }
@@ -279,7 +283,7 @@ public class TourGuideService {
   }
 
   private void generateUserLocationHistory(User user) {
-    IntStream.range(0, 3)
+    IntStream.range(0,3)
         .forEach(
             i ->
                 user.addToVisitedLocations(

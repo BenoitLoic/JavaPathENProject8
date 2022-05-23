@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import tourGuide.model.UserReward;
 import tourGuide.model.VisitedLocation;
@@ -15,7 +16,7 @@ public class User {
   private String phoneNumber;
   private String emailAddress;
   private Date latestLocationTimestamp;
-  private final List<VisitedLocation> visitedLocations = new ArrayList<>();
+  private final List<VisitedLocation> visitedLocations = new CopyOnWriteArrayList<>();
   private final List<UserReward> userRewards = new ArrayList<>();
   private UserPreferences userPreferences = new UserPreferences();
   private List<Provider> tripDeals = new ArrayList<>();
@@ -66,26 +67,18 @@ public class User {
   }
 
   public List<VisitedLocation> getVisitedLocations() {
-    return visitedLocations;
+    return List.copyOf(visitedLocations);
   }
 
   public void clearVisitedLocations() {
     visitedLocations.clear();
   }
 
-  // TODO MEH...
+
   public void addUserReward(UserReward userReward) {
-    // le stream retourne le nombre de fois ou attraction.attractionName =!= userReward.attraction
-    // et si == 0 on ajoute une nouvelle reward à l'utilisateur
-    long count = 0L;
-    for (UserReward r : userRewards) {
-      if (!r.attraction().attractionName().equals(userReward.attraction().attractionName())) {
-        count++;
-      }
-    }
-    if (count == 0) {
+
       userRewards.add(userReward);
-    }
+
   }
 
   public List<UserReward> getUserRewards() {

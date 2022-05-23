@@ -68,7 +68,7 @@ class RewardsServiceTest {
         .thenReturn(new UserReward(userId, visitedLocationTest, attractionTest, 50));
     // THEN
     Collection<UserReward> actual = rewardsService.getRewards(userMock);
-    TimeUnit.MILLISECONDS.sleep(5);
+    TimeUnit.MILLISECONDS.sleep(15);
     verify(rewardClientMock, times(1)).addUserReward(userId, visitedLocationTest);
     assertThat(actual.size()).isEqualTo(1);
     assertThat(actual).isEqualTo(expected);
@@ -97,15 +97,14 @@ class RewardsServiceTest {
         .thenReturn(new UserReward(userId, visitedLocationTest, attractionTest, 50));
     // THEN
     Collection<UserReward> actual = rewardsService.getRewards(userMock);
-    TimeUnit.MILLISECONDS.sleep(5);
+    TimeUnit.MILLISECONDS.sleep(15);
     verify(rewardClientMock, times(5)).addUserReward(userId, visitedLocationTest);
     assertThat(actual.size()).isEqualTo(5);
     assertThat(actual).isEqualTo(expected);
 
   }
 
-
-  @Disabled
+@Disabled
   @Test
   void getRewards_WhenClientThrowException_ShouldThrowResourceNotFoundException(){
 
@@ -113,7 +112,7 @@ class RewardsServiceTest {
     User userMock = new User(userId, "userNameTest", "phoneTest", "emailTest");
     userMock.addToVisitedLocations(visitedLocationTest);
     // WHEN
-    doThrow(ResourceNotFoundException.class).when(rewardClientMock).addUserReward(any(),any());
+    doThrow(feign.FeignException.class).when(rewardClientMock).addUserReward(any(),any());
     // THEN
     assertThrows(ResourceNotFoundException.class,()->rewardsService.getRewards(userMock));
 

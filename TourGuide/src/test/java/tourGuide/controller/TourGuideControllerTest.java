@@ -2,6 +2,7 @@ package tourGuide.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.Matcher;
+import org.hamcrest.core.IsEqual;
 import org.mockito.internal.hamcrest.HamcrestArgumentMatcher;
 import tourGuide.config.Url;
 import tourGuide.exception.DataNotFoundException;
@@ -26,6 +27,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import tripPricer.Provider;
 
 import static org.hamcrest.EasyMock2Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -40,7 +42,7 @@ import static tourGuide.config.Url.*;
 class TourGuideControllerTest {
 
   private final UUID userId = UUID.randomUUID();
-  private final String validUserName = "userName";
+  private final static String validUserName = "userName";
   private final Date date = new Date();
   private final VisitedLocation visitedLocationTest =
       new VisitedLocation(UUID.randomUUID(), new Location(56d, 22d), date);
@@ -260,32 +262,52 @@ class TourGuideControllerTest {
   }
 
   @Test
-  void getTripDealsValid() {
+  void getTripDealsValid() throws Exception {
     // GIVEN
-
+    UUID tripId = UUID.randomUUID();
+    double tripPrice = 99.5;
+    Provider provider = new Provider(tripId, "providerNameTest", tripPrice);
+    List<Provider> providers = new ArrayList<>();
+    providers.add(provider);
+    providers.add(provider);
     // WHEN
-
+    when(tourGuideServiceMock.getTripDeals(Mockito.any())).thenReturn(providers);
+    when(tourGuideServiceMock.getUser(anyString())).thenReturn(validUser);
     // THEN
-
+    mockMvc
+        .perform(get(GETTRIPDEALS).param("userName", validUserName))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.size()", IsEqual.equalTo(2)));
   }
 
   @Test
-  void getTripDealsInvalid() {
+  void getTripDealsInvalid() throws Exception {
     // GIVEN
 
     // WHEN
 
     // THEN
-
+    mockMvc
+        .perform(get(GETTRIPDEALS).param("userName", ""))
+        .andExpect(status().isBadRequest())
+        .andExpect(
+            result ->
+                assertTrue(result.getResolvedException() instanceof IllegalArgumentException));
   }
 
   @Test
-  void getTripDealsWhenUserDoesntExist_ShouldThrowDataNotFoundException() {
+  void getTripDealsWhenUserDoesntExist_ShouldThrowDataNotFoundException() throws Exception {
     // GIVEN
 
     // WHEN
-
+    doThrow(DataNotFoundException.class).when(tourGuideServiceMock).getUser(anyString());
     // THEN
-
+    mockMvc
+        .perform(get(GETTRIPDEALS).param("userName", "unknownUser"))
+        .andExpect(status().isNotFound())
+        .andExpect(
+            result ->
+                assertTrue(result.getResolvedException() instanceof DataNotFoundException));
   }
 }
