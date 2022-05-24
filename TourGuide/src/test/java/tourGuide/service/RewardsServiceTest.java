@@ -2,6 +2,7 @@ package tourGuide.service;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -42,9 +43,7 @@ class RewardsServiceTest {
           "attractionCityTest",
           "attractionStateTest",
           UUID.randomUUID(),
-          new Location(
-          22d,
-          56d),
+          new Location(22d, 56d),
           null);
 
   @Mock RewardClient rewardClientMock;
@@ -56,9 +55,8 @@ class RewardsServiceTest {
 
   }
 
-
   @Test
-  void getRewardsShouldCallRewardClient1Time()  {
+  void getRewardsShouldCallRewardClient1Time() throws InterruptedException {
 
     // GIVEN
     User userMock = new User(userId, "userNameTest", "phoneTest", "emailTest");
@@ -71,15 +69,14 @@ class RewardsServiceTest {
         .thenReturn(new UserReward(userId, visitedLocationTest, attractionTest, 50));
     // THEN
     Collection<UserReward> actual = rewardsService.getRewards(userMock);
-    rewardsService.awaitTerminationAfterShutdown();
+    TimeUnit.MILLISECONDS.sleep(200);
     verify(rewardClientMock, times(1)).addUserReward(userId, visitedLocationTest);
     assertThat(actual.size()).isEqualTo(1);
     assertThat(actual).isEqualTo(expected);
-
   }
 
   @Test
-  void getRewardsShouldCallRewardClient5Times()  {
+  void getRewardsShouldCallRewardClient5Times() throws InterruptedException {
 
     // GIVEN
     User userMock = new User(userId, "userNameTest", "phoneTest", "emailTest");
@@ -100,12 +97,9 @@ class RewardsServiceTest {
         .thenReturn(new UserReward(userId, visitedLocationTest, attractionTest, 50));
     // THEN
     Collection<UserReward> actual = rewardsService.getRewards(userMock);
-    rewardsService.awaitTerminationAfterShutdown();
+    TimeUnit.MILLISECONDS.sleep(200);
+    assertThat(actual.size()).isEqualTo(expected.size());
     verify(rewardClientMock, times(5)).addUserReward(userId, visitedLocationTest);
-    assertThat(actual.size()).isEqualTo(5);
     assertThat(actual).isEqualTo(expected);
-
   }
-
-
 }

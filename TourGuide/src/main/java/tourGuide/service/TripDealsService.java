@@ -6,6 +6,7 @@ import tourGuide.user.UserPreferences;
 import tripPricer.Provider;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface TripDealsService {
     /**
@@ -14,7 +15,7 @@ public interface TripDealsService {
      * @param user the user
      * @return the list of providers
      */
-    List<Provider> getTripDeals(User user);
+    List<Provider> getTripDeals(User user, UUID attractionId);
 
     /**
      * This method add a UserPreferences to the user with the given username.

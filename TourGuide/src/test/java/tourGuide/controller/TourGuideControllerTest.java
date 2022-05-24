@@ -277,11 +277,11 @@ class TourGuideControllerTest {
     providers.add(provider);
     providers.add(provider);
     // WHEN
-    when(tourGuideServiceMock.getTripDeals(Mockito.any())).thenReturn(providers);
+    when(tripDealsServiceMock.getTripDeals(Mockito.any(),Mockito.any())).thenReturn(providers);
     when(tourGuideServiceMock.getUser(anyString())).thenReturn(validUser);
     // THEN
     mockMvc
-        .perform(get(GETTRIPDEALS).param("userName", validUserName))
+        .perform(get(GETTRIPDEALS).param("userName", validUserName).param("attractionId",UUID.randomUUID().toString()))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(jsonPath("$.size()", IsEqual.equalTo(2)));
@@ -295,7 +295,7 @@ class TourGuideControllerTest {
 
     // THEN
     mockMvc
-        .perform(get(GETTRIPDEALS).param("userName", ""))
+        .perform(get(GETTRIPDEALS).param("userName", "").param("attractionId",UUID.randomUUID().toString()))
         .andExpect(status().isBadRequest())
         .andExpect(
             result ->
@@ -310,7 +310,7 @@ class TourGuideControllerTest {
     doThrow(DataNotFoundException.class).when(tourGuideServiceMock).getUser(anyString());
     // THEN
     mockMvc
-        .perform(get(GETTRIPDEALS).param("userName", "unknownUser"))
+        .perform(get(GETTRIPDEALS).param("userName", "unknownUser").param("attractionId",UUID.randomUUID().toString()))
         .andExpect(status().isNotFound())
         .andExpect(
             result -> assertTrue(result.getResolvedException() instanceof DataNotFoundException));

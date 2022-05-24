@@ -31,6 +31,7 @@ import static org.mockito.Mockito.*;
 public class TripDealsServiceTest {
 
   private final UUID userId = UUID.randomUUID();
+  private final UUID attractionId = UUID.randomUUID();
   private final String username = "usernameTest";
   private final String phoneNumber = "phoneTest";
   private final String email = "emailTest";
@@ -52,7 +53,7 @@ public class TripDealsServiceTest {
         .doCallRealMethod()
         .when(tripPricerMock)
         .getPrice(anyString(), any(UUID.class), anyInt(), anyInt(), anyInt(), anyInt());
-    List<Provider> tripDeals = tripDealsService.getTripDeals(user);
+    List<Provider> tripDeals = tripDealsService.getTripDeals(user,UUID.randomUUID());
 
     // THEN
     assertThat(tripDeals.size()).isEqualTo(5);
@@ -79,7 +80,7 @@ public class TripDealsServiceTest {
         .doCallRealMethod()
         .when(tripPricerMock)
         .getPrice(anyString(), any(UUID.class), anyInt(), anyInt(), anyInt(), anyInt());
-    List<Provider> tripDeals = tripDealsService.getTripDeals(user);
+    List<Provider> tripDeals = tripDealsService.getTripDeals(user,attractionId);
 
     // THEN
     assertThat(tripDeals.size()).isEqualTo(5);

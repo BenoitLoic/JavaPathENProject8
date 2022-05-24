@@ -1,7 +1,6 @@
 package tourGuide.service;
 
 import org.javamoney.moneta.Money;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import tourGuide.dto.AddUserPreferencesDto;
@@ -10,9 +9,9 @@ import tourGuide.user.User;
 import tourGuide.user.UserPreferences;
 import tripPricer.Provider;
 import tripPricer.TripPricer;
-import tripPricer.TripPricerTask;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class TripDealsServiceImpl implements TripDealsService {
@@ -35,7 +34,7 @@ public class TripDealsServiceImpl implements TripDealsService {
    * @return the list of providers
    */
   @Override
-  public List<Provider> getTripDeals(User user) {
+  public List<Provider> getTripDeals(User user, UUID attractionId) {
 
     int cumulativeRewardPoints =
         user.getUserRewards().stream().mapToInt(UserReward::rewardPoints).sum();

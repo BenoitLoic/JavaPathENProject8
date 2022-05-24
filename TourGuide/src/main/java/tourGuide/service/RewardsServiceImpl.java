@@ -58,11 +58,11 @@ public class RewardsServiceImpl implements RewardsService {
   @Override
   public Collection<UserReward> getRewards(User user) {
 
-    List<UserReward> userRewardsCopy = new ArrayList<>(user.getUserRewards().size());
-    Collections.copy(userRewardsCopy, user.getUserRewards());
+    List<UserReward> userRewards = user.getUserRewards();
+
 
     List<UUID> attractionIds = new ArrayList<>();
-    userRewardsCopy.forEach(ur -> attractionIds.add(ur.attraction().attractionId()));
+    userRewards.forEach(ur -> attractionIds.add(ur.attraction().attractionId()));
     List<UserReward> userRewardsReturnList = new ArrayList<>();
 
     for (VisitedLocation visitedLocation : user.getVisitedLocations()) {
@@ -70,13 +70,13 @@ public class RewardsServiceImpl implements RewardsService {
       try {
         CompletableFuture.supplyAsync(
                 () -> rewardClient.addUserReward(user.getUserId(), visitedLocation), threadPool)
-            .thenAccept(
+            .thenAcceptAsync(
                 userReward -> {
                   userRewardsReturnList.add(userReward);
                   if (!attractionIds.contains(userReward.attraction().attractionId())) {
                     user.addUserReward(userReward);
                   }
-                });
+                },threadPool);
       } catch (FeignException.FeignClientException fce) {
         logger.error("Error, Feign client failed." + fce);
         throw new ResourceNotFoundException("Error, cant reach service.");

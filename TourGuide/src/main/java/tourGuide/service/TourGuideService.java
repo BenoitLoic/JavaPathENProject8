@@ -96,7 +96,7 @@ public class TourGuideService {
    */
   public VisitedLocation getUserLocation(User user) {
 
-           user.addToVisitedLocations( locationClient.getLocation(user.getUserId()));
+    user.addToVisitedLocations(locationClient.getLocation(user.getUserId()));
 
     return user.getLastVisitedLocation();
   }
@@ -181,7 +181,11 @@ public class TourGuideService {
 
     CompletableFuture.supplyAsync(
             () -> locationClient.getLocation(user.getUserId()), executorService)
-        .thenAccept(user::addToVisitedLocations);
+        .thenAccept(
+            visitedLocation -> {
+              user.addToVisitedLocations(visitedLocation);
+              user.setLatestLocationTimestamp(visitedLocation.timeVisited());
+            });
   }
 
   /**
@@ -283,7 +287,7 @@ public class TourGuideService {
   }
 
   private void generateUserLocationHistory(User user) {
-    IntStream.range(0,3)
+    IntStream.range(0, 3)
         .forEach(
             i ->
                 user.addToVisitedLocations(

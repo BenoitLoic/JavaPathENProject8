@@ -27,6 +27,7 @@ import tourGuide.user.UserPreferences;
 import tripPricer.Provider;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 import static tourGuide.config.Url.*;
 
@@ -110,7 +111,7 @@ public class TourGuideController {
    * @return list of providers as JSON
    */
   @GetMapping(value = GETTRIPDEALS)
-  public Collection<Provider> getTripDeals(@RequestParam String userName) {
+  public Collection<Provider> getTripDeals(@RequestParam String userName, @RequestParam UUID attractionId) {
 
     if (userName == null || userName.isBlank()) {
       logger.warn("error, username is mandatory. username: " + userName);
@@ -118,7 +119,7 @@ public class TourGuideController {
     }
     User user = tourGuideService.getUser(userName);
 
-    return tripDealsService.getTripDeals(user);
+    return tripDealsService.getTripDeals(user,attractionId);
   }
 
   @PostMapping(value = ADDUSERPREFERENCES)
