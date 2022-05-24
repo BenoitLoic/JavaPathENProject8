@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.Matcher;
 import org.hamcrest.core.IsEqual;
 import org.mockito.internal.hamcrest.HamcrestArgumentMatcher;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import tourGuide.config.Url;
+import tourGuide.dto.AddUserPreferencesDto;
 import tourGuide.exception.DataNotFoundException;
 import tourGuide.exception.IllegalArgumentException;
 import tourGuide.exception.ResourceNotFoundException;
@@ -14,6 +16,8 @@ import tourGuide.model.UserReward;
 import tourGuide.model.VisitedLocation;
 import tourGuide.service.RewardsServiceImpl;
 import tourGuide.service.TourGuideService;
+import tourGuide.service.TripDealsService;
+import tourGuide.service.TripDealsServiceImpl;
 import tourGuide.user.User;
 
 import java.util.*;
@@ -27,6 +31,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import tourGuide.user.UserPreferences;
 import tripPricer.Provider;
 
 import static org.hamcrest.EasyMock2Matchers.equalTo;
@@ -34,6 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static tourGuide.config.Url.*;
 
@@ -42,7 +48,7 @@ import static tourGuide.config.Url.*;
 class TourGuideControllerTest {
 
   private final UUID userId = UUID.randomUUID();
-  private final static String validUserName = "userName";
+  private static final String validUserName = "userName";
   private final Date date = new Date();
   private final VisitedLocation visitedLocationTest =
       new VisitedLocation(UUID.randomUUID(), new Location(56d, 22d), date);
@@ -60,7 +66,7 @@ class TourGuideControllerTest {
   @Autowired MockMvc mockMvc;
   @MockBean TourGuideService tourGuideServiceMock;
   @MockBean RewardsServiceImpl rewardsServiceMock;
-  @InjectMocks TourGuideController tourGuideController;
+  @MockBean TripDealsServiceImpl tripDealsServiceMock;
 
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
@@ -307,7 +313,74 @@ class TourGuideControllerTest {
         .perform(get(GETTRIPDEALS).param("userName", "unknownUser"))
         .andExpect(status().isNotFound())
         .andExpect(
-            result ->
-                assertTrue(result.getResolvedException() instanceof DataNotFoundException));
+            result -> assertTrue(result.getResolvedException() instanceof DataNotFoundException));
+  }
+
+  @Test
+  void addUserPreferencesValid() throws Exception {
+
+    // GIVEN
+    String username = "usernameTest";
+
+    //    AddUserPreferencesDto( int attractionProximity, int lowerPricePoint, int highPricePoint,
+    // int tripDuration, int ticketQuantity, int numberOfAdults, int numberOfChildren)
+
+    AddUserPreferencesDto validUserPreferences =
+        new AddUserPreferencesDto(username, 0, 0, 0, 0, 0, 0, 0);
+    String jsonBody = MAPPER.writeValueAsString(validUserPreferences);
+    System.out.println(jsonBody);
+    // WHEN
+    Mockito.doNothing().when(tripDealsServiceMock).addUserPreferences(Mockito.any());
+    // THEN
+    mockMvc
+        .perform(
+            post(ADDUSERPREFERENCES)
+                .content(jsonBody)
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated());
+    verify(tripDealsServiceMock, times(1)).addUserPreferences(validUserPreferences);
+  }
+  @Test
+  void addUserPreferencesInvalid() throws Exception {
+
+    // GIVEN
+    String username = "";
+
+    //    AddUserPreferencesDto( int attractionProximity, int lowerPricePoint, int highPricePoint,
+    // int tripDuration, int ticketQuantity, int numberOfAdults, int numberOfChildren)
+
+    AddUserPreferencesDto validUserPreferences =
+            new AddUserPreferencesDto(username, 0, 0, 0, 0, 0, 0, 0);
+    String jsonBody = MAPPER.writeValueAsString(validUserPreferences);
+    // WHEN
+
+    // THEN
+    mockMvc
+            .perform(
+                    post(ADDUSERPREFERENCES)
+                            .content(jsonBody)
+                            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(result -> assertTrue(result.getResolvedException() instanceof MethodArgumentNotValidException));
+  }
+
+  @Test
+  void addUserPreferencesWhenUserDoesntExist_ShouldThrowDataNotFoundException() throws Exception {
+
+    // GIVEN
+    String uknUserUsername = "ukn";
+    AddUserPreferencesDto validUserPreferences =
+            new AddUserPreferencesDto(uknUserUsername, 0, 0, 0, 0, 0, 0, 0);
+    String jsonBody = MAPPER.writeValueAsString(validUserPreferences);
+    // WHEN
+    doThrow(DataNotFoundException.class).when(tripDealsServiceMock).addUserPreferences(Mockito.any());
+    // THEN
+    mockMvc
+            .perform(
+                    post(ADDUSERPREFERENCES)
+                            .content(jsonBody)
+                            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isNotFound())
+            .andExpect(result -> assertTrue(result.getResolvedException() instanceof DataNotFoundException));
   }
 }

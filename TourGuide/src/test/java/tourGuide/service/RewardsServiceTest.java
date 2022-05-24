@@ -58,7 +58,7 @@ class RewardsServiceTest {
 
 
   @Test
-  void getRewardsShouldCallRewardClient1Time() throws InterruptedException {
+  void getRewardsShouldCallRewardClient1Time()  {
 
     // GIVEN
     User userMock = new User(userId, "userNameTest", "phoneTest", "emailTest");
@@ -71,7 +71,7 @@ class RewardsServiceTest {
         .thenReturn(new UserReward(userId, visitedLocationTest, attractionTest, 50));
     // THEN
     Collection<UserReward> actual = rewardsService.getRewards(userMock);
-    TimeUnit.MILLISECONDS.sleep(15);
+    rewardsService.awaitTerminationAfterShutdown();
     verify(rewardClientMock, times(1)).addUserReward(userId, visitedLocationTest);
     assertThat(actual.size()).isEqualTo(1);
     assertThat(actual).isEqualTo(expected);
@@ -79,7 +79,7 @@ class RewardsServiceTest {
   }
 
   @Test
-  void getRewardsShouldCallRewardClient5Times() throws InterruptedException {
+  void getRewardsShouldCallRewardClient5Times()  {
 
     // GIVEN
     User userMock = new User(userId, "userNameTest", "phoneTest", "emailTest");
@@ -100,25 +100,12 @@ class RewardsServiceTest {
         .thenReturn(new UserReward(userId, visitedLocationTest, attractionTest, 50));
     // THEN
     Collection<UserReward> actual = rewardsService.getRewards(userMock);
-    TimeUnit.MILLISECONDS.sleep(15);
+    rewardsService.awaitTerminationAfterShutdown();
     verify(rewardClientMock, times(5)).addUserReward(userId, visitedLocationTest);
     assertThat(actual.size()).isEqualTo(5);
     assertThat(actual).isEqualTo(expected);
 
   }
 
-@Disabled
-  @Test
-  void getRewards_WhenClientThrowException_ShouldThrowResourceNotFoundException(){
-
-    // GIVEN
-    User userMock = new User(userId, "userNameTest", "phoneTest", "emailTest");
-    userMock.addToVisitedLocations(visitedLocationTest);
-    // WHEN
-    doThrow(feign.FeignException.class).when(rewardClientMock).addUserReward(any(),any());
-    // THEN
-    assertThrows(ResourceNotFoundException.class,()->rewardsService.getRewards(userMock));
-
-  }
 
 }

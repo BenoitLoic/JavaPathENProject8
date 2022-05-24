@@ -1,6 +1,9 @@
 package tourGuide.controller;
 
 import com.jsoniter.output.JsonStream;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+import tourGuide.dto.AddUserPreferencesDto;
 import tourGuide.dto.GetNearbyAttractionDto;
 import tourGuide.exception.DataNotFoundException;
 import tourGuide.exception.IllegalArgumentException;
@@ -9,6 +12,7 @@ import tourGuide.model.UserReward;
 import tourGuide.model.VisitedLocation;
 import tourGuide.service.RewardsService;
 import tourGuide.service.TourGuideService;
+import tourGuide.service.TripDealsService;
 import tourGuide.user.User;
 import java.util.Collection;
 import java.util.List;
@@ -19,11 +23,10 @@ import java.util.concurrent.ExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import tourGuide.user.UserPreferences;
 import tripPricer.Provider;
+
+import javax.validation.Valid;
 
 import static tourGuide.config.Url.*;
 
@@ -33,6 +36,7 @@ public class TourGuideController {
   private final Logger logger = LoggerFactory.getLogger(TourGuideController.class);
   @Autowired TourGuideService tourGuideService;
   @Autowired RewardsService rewardsService;
+  @Autowired TripDealsService tripDealsService;
 
   @RequestMapping(value = INDEX)
   public String index() {
@@ -105,7 +109,7 @@ public class TourGuideController {
    * @param userName the user's userName
    * @return list of providers as JSON
    */
-  @RequestMapping(value = GETTRIPDEALS)
+  @GetMapping(value = GETTRIPDEALS)
   public Collection<Provider> getTripDeals(@RequestParam String userName) {
 
     if (userName == null || userName.isBlank()) {
@@ -114,7 +118,29 @@ public class TourGuideController {
     }
     User user = tourGuideService.getUser(userName);
 
-    return tourGuideService.getTripDeals(user);
+    return tripDealsService.getTripDeals(user);
+  }
+
+  @PostMapping(value = ADDUSERPREFERENCES)
+  @ResponseStatus(HttpStatus.CREATED)
+  public void addUserPreferences(@Valid @RequestBody AddUserPreferencesDto userPreferences) {
+    tripDealsService.addUserPreferences(userPreferences);
+  }
+  /**
+   * This method get the User object in data storage with its userName.
+   *
+   * @param userName the user's userName
+   * @return the User
+   */
+  @GetMapping("/getUser")
+  private User getUser(@RequestParam String userName) {
+
+    User user = tourGuideService.getUser(userName);
+    if (user == null) {
+      logger.warn("Error, user :" + userName + " doesn't exist.");
+      throw new DataNotFoundException("Error, user : " + userName + " doesn't exist.");
+    }
+    return user;
   }
 
 }

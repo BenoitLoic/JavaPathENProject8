@@ -5,19 +5,23 @@ import javax.money.Monetary;
 
 import org.javamoney.moneta.Money;
 
+import java.util.Objects;
 
 public class UserPreferences {
 
-  private       int          attractionProximity = Integer.MAX_VALUE;
-  private final CurrencyUnit currency            = Monetary.getCurrency("USD");
-  private       Money        lowerPricePoint     = Money.of(0, currency);
-  private Money        highPricePoint      = Money.of(Integer.MAX_VALUE, currency);
-  private int          tripDuration        = 1;
-  private int          ticketQuantity      = 1;
-  private int          numberOfAdults      = 1;
-  private int          numberOfChildren    = 0;
+  private int attractionProximity = Integer.MAX_VALUE;
+  private final CurrencyUnit currency = Monetary.getCurrency("USD");
+  private Money lowerPricePoint = Money.of(0, currency);
+  private Money highPricePoint = Money.of(Integer.MAX_VALUE, currency);
+  private int tripDuration = 1;
+  private int ticketQuantity = 1;
+  private int numberOfAdults = 1;
+  private int numberOfChildren = 0;
 
-  public UserPreferences() {
+  public UserPreferences() {}
+
+  public CurrencyUnit getCurrency() {
+    return currency;
   }
 
   public void setAttractionProximity(int attractionProximity) {
@@ -77,16 +81,37 @@ public class UserPreferences {
   }
 
   @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    UserPreferences that = (UserPreferences) o;
+    return attractionProximity == that.attractionProximity && tripDuration == that.tripDuration && ticketQuantity == that.ticketQuantity && numberOfAdults == that.numberOfAdults && numberOfChildren == that.numberOfChildren && Objects.equals(currency, that.currency) && Objects.equals(lowerPricePoint, that.lowerPricePoint) && Objects.equals(highPricePoint, that.highPricePoint);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(attractionProximity, currency, lowerPricePoint, highPricePoint, tripDuration, ticketQuantity, numberOfAdults, numberOfChildren);
+  }
+
+  @Override
   public String toString() {
-    return "UserPreferences{" +
-            "attractionProximity=" + attractionProximity +
-            ", currency=" + currency +
-            ", lowerPricePoint=" + lowerPricePoint +
-            ", highPricePoint=" + highPricePoint +
-            ", tripDuration=" + tripDuration +
-            ", ticketQuantity=" + ticketQuantity +
-            ", numberOfAdults=" + numberOfAdults +
-            ", numberOfChildren=" + numberOfChildren +
-            '}';
+    return "UserPreferences{"
+        + "attractionProximity="
+        + attractionProximity
+        + ", currency="
+        + currency
+        + ", lowerPricePoint="
+        + lowerPricePoint
+        + ", highPricePoint="
+        + highPricePoint
+        + ", tripDuration="
+        + tripDuration
+        + ", ticketQuantity="
+        + ticketQuantity
+        + ", numberOfAdults="
+        + numberOfAdults
+        + ", numberOfChildren="
+        + numberOfChildren
+        + '}';
   }
 }

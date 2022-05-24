@@ -60,13 +60,13 @@ public class RewardsServiceImpl implements RewardsService {
 
     List<UserReward> userRewardsCopy = new ArrayList<>(user.getUserRewards().size());
     Collections.copy(userRewardsCopy, user.getUserRewards());
-logger.info("1er");
+
     List<UUID> attractionIds = new ArrayList<>();
     userRewardsCopy.forEach(ur -> attractionIds.add(ur.attraction().attractionId()));
     List<UserReward> userRewardsReturnList = new ArrayList<>();
 
     for (VisitedLocation visitedLocation : user.getVisitedLocations()) {
-      logger.info("before try");
+
       try {
         CompletableFuture.supplyAsync(
                 () -> rewardClient.addUserReward(user.getUserId(), visitedLocation), threadPool)

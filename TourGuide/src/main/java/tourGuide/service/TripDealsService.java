@@ -1,6 +1,8 @@
 package tourGuide.service;
 
+import tourGuide.dto.AddUserPreferencesDto;
 import tourGuide.user.User;
+import tourGuide.user.UserPreferences;
 import tripPricer.Provider;
 
 import java.util.List;
@@ -13,4 +15,11 @@ public interface TripDealsService {
      * @return the list of providers
      */
     List<Provider> getTripDeals(User user);
+
+    /**
+     * This method add a UserPreferences to the user with the given username.
+     *
+     * @param userPreferences the userPreferences to add
+     */
+    void addUserPreferences(AddUserPreferencesDto userPreferences);
 }
