@@ -51,7 +51,10 @@ class RewardsServiceTest {
   @InjectMocks RewardsServiceImpl rewardsService;
 
   @Test
-  void calculateRewardsPoints() {}
+  void calculateRewardsPoints() {
+    // TODO ajouter les tests
+
+  }
 
 
   @Test
