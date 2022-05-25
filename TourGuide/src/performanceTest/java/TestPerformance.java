@@ -41,7 +41,7 @@ public class TestPerformance {
 
   @BeforeAll
   static void beforeAll() {
-    InternalTestHelper.setInternalUserNumber(10);
+    InternalTestHelper.setInternalUserNumber(100000);
     java.util.Locale.setDefault(java.util.Locale.US);
   }
 
@@ -115,6 +115,7 @@ public class TestPerformance {
     gpsUtil.location.Attraction temp = gpsUtil.getAttractions().get(0);
 
     List<User> allUsers = tourGuideService.getAllUsers();
+    allUsers.forEach(User::clearVisitedLocations);
     allUsers.forEach(
         u ->
             u.addToVisitedLocations(

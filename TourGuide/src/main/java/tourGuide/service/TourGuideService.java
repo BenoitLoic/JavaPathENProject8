@@ -1,13 +1,16 @@
 package tourGuide.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.Feign;
 import feign.FeignException;
 import tourGuide.client.LocationClient;
 import tourGuide.client.UserClient;
+import tourGuide.dto.AddNewUser;
 import tourGuide.dto.GetNearbyAttractionDto;
 import tourGuide.exception.DataNotFoundException;
 import tourGuide.exception.ResourceNotFoundException;
 import tourGuide.helper.InternalTestHelper;
+import tourGuide.helper.InternalTestRepository;
 import tourGuide.model.Attraction;
 import tourGuide.model.Location;
 import tourGuide.model.UserReward;
@@ -43,13 +46,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class TourGuideService {
   public Tracker tracker;
-
-  @Value("${tripPricer.apiKey}")
-  private static String tripPricerApiKey;
-
   protected final Logger logger = LoggerFactory.getLogger(TourGuideService.class);
-  protected final TripPricer tripPricer = new TripPricer();
   private final ExecutorService executorService = Executors.newFixedThreadPool(100);
+  private final Map<String, User> internalUserMap;
 
   @Value("${tourGuide.testMode}")
   boolean testMode;
@@ -63,16 +62,16 @@ public class TourGuideService {
     this.locationClient = locationClient;
     this.userClient = userClient;
     this.rewardsService = rewardsService;
-
-    logger.info("TestMode enabled");
     logger.debug("Initializing users");
-    initializeInternalUsers();
+    InternalTestRepository internalTestRepository = new InternalTestRepository();
+    internalUserMap = internalTestRepository.getInternalUserMap();
     logger.debug("Finished initializing users");
   }
 
   @PostConstruct
   void testModeInit() {
     if (testMode) {
+      logger.info("TestMode enabled");
       tracker = new Tracker(this);
       addShutDownHook();
     }
@@ -134,31 +133,10 @@ public class TourGuideService {
     if (!internalUserMap.containsKey(user.getUserName())) {
       internalUserMap.put(user.getUserName(), user);
     }
-  }
 
-  /**
-   * This method get a list of providers for the given user based on its user preferences.
-   *
-   * @param user the user
-   * @return the list of providers
-   */
-  public List<Provider> getTripDeals(User user) {
-
-    int cumulativeRewardPoints =
-        user.getUserRewards().stream().mapToInt(UserReward::rewardPoints).sum();
-
-    List<Provider> providers =
-        tripPricer.getPrice(
-            tripPricerApiKey,
-            user.getUserId(),
-            user.getUserPreferences().getNumberOfAdults(),
-            user.getUserPreferences().getNumberOfChildren(),
-            user.getUserPreferences().getTripDuration(),
-            cumulativeRewardPoints);
-
-    user.setTripDeals(providers);
-
-    return providers;
+    AddNewUser newUser =
+        new AddNewUser(user.getUserName(), user.getPhoneNumber(), user.getEmailAddress());
+    userClient.addUser(newUser);
   }
 
   public void awaitTerminationAfterShutdown() {
@@ -213,6 +191,7 @@ public class TourGuideService {
         logger.warn("Error, user :" + userName + " doesn't exist.");
         throw new DataNotFoundException("Error, user : " + userName + " doesn't exist.");
       }
+
       UUID userId = user.getUserId();
       VisitedLocation visitedLocation = locationClient.getLocation(userId);
 
@@ -228,14 +207,13 @@ public class TourGuideService {
       Collection<Attraction> nearbyAttractions =
           locationClient.getNearbyAttractions(
               visitedLocation.location().latitude(), visitedLocation.location().longitude());
-
       Collection<GetNearbyAttractionDto> dtoCollection =
           rewardsService.calculateRewardsPoints(nearbyAttractions, userId);
       Map<Location, Collection<GetNearbyAttractionDto>> response = new HashMap<>(1);
       response.put(visitedLocation.location(), dtoCollection);
       return response;
     } catch (feign.FeignException fce) {
-      logger.error("Error, Feign client failed." + fce);
+      logger.error("Error, Feign client failed. " + fce);
       throw new ResourceNotFoundException("Error, cant reach service.");
     }
   }
@@ -256,61 +234,5 @@ public class TourGuideService {
 
   private void addShutDownHook() {
     Runtime.getRuntime().addShutdownHook(new Thread(() -> tracker.stopTracking()));
-  }
-
-  /**********************************************************************************
-   *
-   * Methods Below: For Internal Testing
-   *
-   **********************************************************************************/
-
-  // Database connection will be used for external users, but for testing purposes internal users
-  // are provided and stored in memory
-  protected final Map<String, User> internalUserMap = new ConcurrentHashMap<>();
-
-  protected void initializeInternalUsers() {
-    IntStream.range(0, InternalTestHelper.getInternalUserNumber())
-        .forEach(
-            i -> {
-              String userName = "internalUser" + i;
-              String phone = "000";
-              String email = userName + "@tourGuide.com";
-              String userNumber = String.format("%06d", i);
-              UUID userId = UUID.fromString("0000-00-00-00-" + userNumber);
-
-              User user = new User(userId, userName, phone, email);
-              generateUserLocationHistory(user);
-
-              internalUserMap.put(userName, user);
-            });
-    logger.debug("Created " + InternalTestHelper.getInternalUserNumber() + " internal test users.");
-  }
-
-  private void generateUserLocationHistory(User user) {
-    IntStream.range(0, 3)
-        .forEach(
-            i ->
-                user.addToVisitedLocations(
-                    new VisitedLocation(
-                        user.getUserId(),
-                        new Location(generateRandomLatitude(), generateRandomLongitude()),
-                        getRandomTime())));
-  }
-
-  private double generateRandomLongitude() {
-    double leftLimit = -180;
-    double rightLimit = 180;
-    return leftLimit + new Random().nextDouble() * (rightLimit - leftLimit);
-  }
-
-  private double generateRandomLatitude() {
-    double leftLimit = -85.05112878;
-    double rightLimit = 85.05112878;
-    return leftLimit + new Random().nextDouble() * (rightLimit - leftLimit);
-  }
-
-  private Date getRandomTime() {
-    LocalDateTime localDateTime = LocalDateTime.now().minusDays(new Random().nextInt(30));
-    return Date.from(localDateTime.toInstant(ZoneOffset.UTC));
   }
 }

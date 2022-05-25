@@ -1,63 +1,75 @@
 //package tourGuide;
 //
-//
+//import java.util.Collection;
 //import java.util.List;
+//import java.util.Map;
 //import java.util.UUID;
 //
-//
-//import gpsUtil.GpsUtil;
-//import gpsUtil.location.Attraction;
-//import gpsUtil.location.VisitedLocation;
-//import rewardCentral.RewardCentral;
+//import org.junit.jupiter.api.RepeatedTest;
+//import org.springframework.beans.factory.annotation.Autowired;
+//import org.springframework.boot.test.context.SpringBootTest;
+//import tourGuide.client.LocationClient;
+//import tourGuide.client.UserClient;
+//import tourGuide.dto.GetNearbyAttractionDto;
 //import tourGuide.helper.InternalTestHelper;
+//import tourGuide.model.Location;
 //import tourGuide.service.RewardsService;
 //import tourGuide.service.TourGuideService;
+//import tourGuide.service.TripDealsService;
+//import tourGuide.service.TripDealsServiceImpl;
 //import tourGuide.user.User;
-//import tripPricer.Provider;
 //import org.junit.jupiter.api.BeforeAll;
-//import org.junit.jupiter.api.Disabled;
 //import org.junit.jupiter.api.Test;
+//import tripPricer.Provider;
+//import tripPricer.TripPricer;
+//
 //import static org.junit.jupiter.api.Assertions.assertEquals;
 //import static org.junit.jupiter.api.Assertions.assertTrue;
 //
+//@SpringBootTest
 //public class TestTourGuideService {
+//
+//  @Autowired LocationClient locationClientMock;
+//  @Autowired UserClient userClientMock;
+//  @Autowired RewardsService rewardsServiceMock;
 //
 //  @BeforeAll
 //  static void beforeAll() {
 //    java.util.Locale.setDefault(java.util.Locale.US);
+//    InternalTestHelper.setInternalUserNumber(0);
 //  }
 //
 //  @Test
-//  public void getUserLocation() {
-//    GpsUtil        gpsUtil        = new GpsUtil();
-//    RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
-//    InternalTestHelper.setInternalUserNumber(0);
-//    TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
+//  public void getUserLocation() throws InterruptedException {
 //
-//    User user = new User(UUID.randomUUID(), "jon", "000",
-//        "jon@tourGuide.com");
-//    VisitedLocation visitedLocation = tourGuideService.trackUserLocation(user);
-//    tourGuideService.tracker.stopTracking();
-//    assertEquals(visitedLocation.userId, user.getUserId());
+//    TourGuideService tourGuideService =
+//        new TourGuideService(locationClientMock, userClientMock, rewardsServiceMock);
+//
+//    User user = new User(UUID.randomUUID(), "jony", "000", "jon@tourGuide.com");
+//    tourGuideService.trackUserLocation(user);
+//
+//    tourGuideService.awaitTerminationAfterShutdown();
+//
+//    tourGuide.model.VisitedLocation visitedLocation = user.getVisitedLocations().get(0);
+//    assertEquals(visitedLocation.userId(), user.getUserId());
 //  }
 //
 //  @Test
 //  public void addUser() {
-//    GpsUtil        gpsUtil        = new GpsUtil();
-//    RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
-//    InternalTestHelper.setInternalUserNumber(0);
-//    TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
 //
-//    User user  = new User(UUID.randomUUID(), "jon", "000", "jon@tourGuide.com");
+//    InternalTestHelper.setInternalUserNumber(0);
+//    TourGuideService tourGuideService =
+//        new TourGuideService(locationClientMock, userClientMock, rewardsServiceMock);
+//
+//    User user = new User(UUID.randomUUID(), "jon", "000", "jon@tourGuide.com");
 //    User user2 = new User(UUID.randomUUID(), "jon2", "000", "jon2@tourGuide.com");
 //
+//    System.out.println(user);
 //    tourGuideService.addUser(user);
 //    tourGuideService.addUser(user2);
 //
-//    User retrievedUser  = tourGuideService.getUser(user.getUserName());
+//    User retrievedUser = tourGuideService.getUser(user.getUserName());
 //    User retrievedUser2 = tourGuideService.getUser(user2.getUserName());
-//
-//    tourGuideService.tracker.stopTracking();
 //
 //    assertEquals(user, retrievedUser);
 //    assertEquals(user2, retrievedUser2);
@@ -65,20 +77,18 @@
 //
 //  @Test
 //  public void getAllUsers() {
-//    GpsUtil        gpsUtil        = new GpsUtil();
-//    RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
-//    InternalTestHelper.setInternalUserNumber(0);
-//    TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
 //
-//    User user  = new User(UUID.randomUUID(), "jon", "000", "jon@tourGuide.com");
-//    User user2 = new User(UUID.randomUUID(), "jon2", "000", "jon2@tourGuide.com");
+//    InternalTestHelper.setInternalUserNumber(0);
+//    TourGuideService tourGuideService =
+//        new TourGuideService(locationClientMock, userClientMock, rewardsServiceMock);
+//
+//    User user = new User(UUID.randomUUID(), "jonx", "000", "jon@tourGuide.com");
+//    User user2 = new User(UUID.randomUUID(), "jonx2", "000", "jon2@tourGuide.com");
 //
 //    tourGuideService.addUser(user);
 //    tourGuideService.addUser(user2);
 //
 //    List<User> allUsers = tourGuideService.getAllUsers();
-//
-//    tourGuideService.tracker.stopTracking();
 //
 //    assertTrue(allUsers.contains(user));
 //    assertTrue(allUsers.contains(user2));
@@ -86,56 +96,45 @@
 //
 //  @Test
 //  public void trackUser() {
-//    GpsUtil        gpsUtil        = new GpsUtil();
-//    RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
-//    InternalTestHelper.setInternalUserNumber(0);
-//    TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
 //
-//    User user = new User(UUID.randomUUID(), "jon", "000",
-//        "jon@tourGuide.com");
-//    VisitedLocation visitedLocation = tourGuideService.trackUserLocation(user);
+//    TourGuideService tourGuideService =
+//        new TourGuideService(locationClientMock, userClientMock, rewardsServiceMock);
+//    User user = new User(UUID.randomUUID(), "jonz", "000", "jon@tourGuide.com");
 //
-//    tourGuideService.tracker.stopTracking();
-//
-//    assertEquals(user.getUserId(), visitedLocation.userId);
+//    assertEquals(0, user.getVisitedLocations().size());
+//    tourGuideService.trackUserLocation(user);
+//    tourGuideService.awaitTerminationAfterShutdown();
+//    assertEquals(user.getUserId(), user.getVisitedLocations().get(0).userId());
 //  }
 //
-//
 //  @Test
-//  @Disabled("not yet implemented")
 //  public void getNearbyAttractions() {
-//    GpsUtil        gpsUtil        = new GpsUtil();
-//    RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
 //
-//    InternalTestHelper.setInternalUserNumber(0);
-//    TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
+//    TourGuideService tourGuideService =
+//        new TourGuideService(locationClientMock, userClientMock, rewardsServiceMock);
 //
-//    User user = new User(UUID.randomUUID(), "jon", "000",
-//        "jon@tourGuide.com");
-//    VisitedLocation visitedLocation = tourGuideService.trackUserLocation(user);
+//    User user = new User(UUID.randomUUID(), "jonb", "000", "jon@tourGuide.com");
+//tourGuideService.addUser(user);
+//    tourGuideService.trackUserLocation(user);
 //
-//    List<Attraction> attractions = tourGuideService.getNearByAttractions(visitedLocation);
-//
-//    tourGuideService.tracker.stopTracking();
+//    Map<Location, Collection<GetNearbyAttractionDto>> attractions =
+//        tourGuideService.getNearbyAttractions(user.getUserName());
 //
 //    assertEquals(5, attractions.size());
 //  }
 //
 //  @Test
 //  public void getTripDeals() {
-//    GpsUtil        gpsUtil        = new GpsUtil();
-//    RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
-//    InternalTestHelper.setInternalUserNumber(0);
-//    TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
+//    TourGuideService tourGuideService =
+//        new TourGuideService(locationClientMock, userClientMock, rewardsServiceMock);
 //
-//    User user = new User(UUID.randomUUID(), "jon", "000", "jon@tourGuide.com");
+//    TripDealsService tripDealsService =
+//        new TripDealsServiceImpl(new TripPricer(), tourGuideService);
 //
-//    List<Provider> providers = tourGuideService.getTripDeals(user);
+//    User user = new User(UUID.randomUUID(), "jonk", "000", "jon@tourGuide.com");
 //
-//    tourGuideService.tracker.stopTracking();
+//    List<Provider> providers = tripDealsService.getTripDeals(user, UUID.randomUUID());
 //
 //    assertEquals(5, providers.size());
 //  }
-//
-//
 //}

@@ -43,8 +43,14 @@ public class RewardsServiceImpl implements RewardsService {
             attraction -> {
               Integer point = rewardClient.getReward(attraction.attractionId(), userId);
               GetNearbyAttractionDto dto =
-                  mapper.convertValue(attraction, GetNearbyAttractionDto.class);
-              dto.setRewardPoint(point);
+                  new GetNearbyAttractionDto(attraction.attractionName(),
+                          attraction.city(),
+                          attraction.state(),
+                          attraction.attractionId(),
+                          attraction.location().latitude(),
+                          attraction.location().longitude(),
+                          attraction.distance(),
+                          point);
               dtoCollection.add(dto);
             });
 
@@ -70,13 +76,13 @@ public class RewardsServiceImpl implements RewardsService {
       try {
         CompletableFuture.supplyAsync(
                 () -> rewardClient.addUserReward(user.getUserId(), visitedLocation), threadPool)
-            .thenAcceptAsync(
+            .thenAccept(
                 userReward -> {
                   userRewardsReturnList.add(userReward);
                   if (!attractionIds.contains(userReward.attraction().attractionId())) {
                     user.addUserReward(userReward);
                   }
-                },threadPool);
+                });
       } catch (FeignException.FeignClientException fce) {
         logger.error("Error, Feign client failed." + fce);
         throw new ResourceNotFoundException("Error, cant reach service.");
