@@ -6,7 +6,7 @@ stages:
 build_job:
   stage: build
   script:
-    - ./gradlew bootJar
+    - ./TourGuide/gradlew bootJar
   image: openjdk:17-alpine
 
 test_job:
