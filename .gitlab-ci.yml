@@ -13,12 +13,12 @@
 #
 # For more information, see: https://docs.gitlab.com/ee/ci/yaml/index.html#stages
 
-stages:          # List of stages for jobs, and their order of execution
+stages: # List of stages for jobs, and their order of execution
   - build
   - test
   - deploy
 
-build-job:       # This job runs in the build stage, which runs first.
+build-job: # This job runs in the build stage, which runs first.
   stage: build
   script:
     - echo "Compiling the code..."
@@ -26,22 +26,17 @@ build-job:       # This job runs in the build stage, which runs first.
     - echo "Compile complete."
   image: openjdk:17-alpine
 
-unit-test-job:   # This job runs in the test stage.
+unit-test-job: # This job runs in the test stage.
   stage: test    # It only starts when the job in the build stage completes successfully.
   script:
     - ./gradlew test
   image: openjdk:17-alpine
-  artifacts:
-    reports:
-      - jacoco : index.html
 
-
-
-lint-test-job:   # This job also runs in the test stage.
+lint-test-job: # This job also runs in the test stage.
   stage: test    # It can run at the same time as unit-test-job (in parallel).
   script:
     - echo "start integration test."
     - ./gradlew integrationTest
     - echo "No lint issues found."
-
+image: openjdk:17-alpine
 
