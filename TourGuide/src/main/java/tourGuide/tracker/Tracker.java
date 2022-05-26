@@ -1,5 +1,7 @@
 package tourGuide.tracker;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import tourGuide.service.RewardsService;
 import tourGuide.service.TourGuideService;
 import tourGuide.user.User;
 import java.util.List;
@@ -16,10 +18,11 @@ public class Tracker extends Thread {
   private final ExecutorService executorService = Executors.newSingleThreadExecutor();
   private final TourGuideService tourGuideService;
   private boolean stop = false;
+  private final RewardsService rewardsService;
 
-  public Tracker(TourGuideService tourGuideService) {
+  public Tracker(TourGuideService tourGuideService, RewardsService rewardsService) {
     this.tourGuideService = tourGuideService;
-
+    this.rewardsService = rewardsService;
     executorService.submit(this);
   }
 
@@ -43,11 +46,13 @@ public class Tracker extends Thread {
       logger.debug("Begin Tracker. Tracking " + users.size() + " users.");
 
       stopWatch.start();
-      users.stream().parallel()
+      users.stream()
+          .parallel()
           .forEach(
               user -> {
                 try {
                   tourGuideService.trackUserLocation(user);
+                  rewardsService.addRewardsForLastLocation(user);
                 } catch (Exception e) {
                   throw new RuntimeException(e);
                 }

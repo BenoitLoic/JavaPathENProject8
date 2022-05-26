@@ -37,6 +37,7 @@ public class TestPerformance {
   @Autowired UserClient userClient;
   //  @Autowired TourGuideService tourGuideService;
   @Autowired RewardsServiceImpl rewardsService;
+  @Autowired TourGuideService tourGuideService;
 
   @BeforeAll
   static void beforeAll() {
@@ -71,12 +72,11 @@ public class TestPerformance {
   public void highVolumeTrackLocation() {
 
     // Users should be incremented up to 100,000, and test finishes within 15 minutes
-    TourGuideService tourGuideService =
-        new TourGuideService(locationClient, userClient, rewardsService);
 
     StopWatch stopWatch = new StopWatch();
     stopWatch.start();
     CopyOnWriteArrayList<User> allUsers = tourGuideService.getAllUsers();
+
     for (User user : allUsers) {
       tourGuideService.trackUserLocation(user);
     }
@@ -86,6 +86,7 @@ public class TestPerformance {
     for (User user : allUsers) {
       assertTrue(user.getVisitedLocations().size() > 3);
     }
+
     stopWatch.stop();
 
     System.out.println(
@@ -99,21 +100,15 @@ public class TestPerformance {
   @Test
   public void highVolumeGetRewards() {
     GpsUtil gpsUtil = new GpsUtil();
-    TourGuideService tourGuideService =
-        new TourGuideService(locationClient, userClient, rewardsService);
-    //        RewardsService rewardsService = new RewardsService();
 
     // Users should be incremented up to 100,000, and test finishes within 20 minutes
 
     StopWatch stopWatch = new StopWatch();
     stopWatch.start();
-    //    TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
 
     gpsUtil.location.Attraction temp = gpsUtil.getAttractions().get(0);
 
     List<User> allUsers = tourGuideService.getAllUsers();
-
-    System.out.println(allUsers.get(100).getUserRewards().size());
 
     allUsers.forEach(User::clearVisitedLocations);
     allUsers.forEach(
@@ -125,14 +120,12 @@ public class TestPerformance {
     allUsers.forEach(u -> rewardsService.addRewards(u));
 
     rewardsService.awaitTerminationAfterShutdown();
-    int count = 0;
+
     for (User user : allUsers) {
-      count++;
       assertTrue(user.getUserRewards().size() > 0);
-      System.out.println(count);
     }
+
     stopWatch.stop();
-    //    tourGuideService.tracker.stopTracking();
 
     System.out.println(
         "highVolumeGetRewards: Time Elapsed: "

@@ -1,34 +1,43 @@
 package tourGuide.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import feign.FeignException;
-import io.netty.util.internal.logging.InternalLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 import tourGuide.client.RewardClient;
 import tourGuide.dto.GetNearbyAttractionDto;
 import tourGuide.exception.ResourceNotFoundException;
 import tourGuide.model.Attraction;
-
-import java.util.*;
-import java.util.concurrent.*;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import tourGuide.model.UserReward;
 import tourGuide.model.VisitedLocation;
 import tourGuide.user.User;
 
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Reward service implementation.
+ */
 @Service
 public class RewardsServiceImpl implements RewardsService {
-  private static final double STATUTE_MILES_PER_NAUTICAL_MILE = 1.15077945;
 
   private final Logger logger = LoggerFactory.getLogger(RewardsServiceImpl.class);
   private final ExecutorService threadPool = Executors.newFixedThreadPool(200);
+  private final RewardClient rewardClient;
 
-  @Autowired RewardClient rewardClient;
-  @Autowired ObjectMapper mapper;
+  public RewardsServiceImpl(RewardClient rewardClient) {
+    this.rewardClient = rewardClient;
+  }
 
+  /**
+   * Get the reward point that could be won by the user for the given list of attractions.
+   *
+   * @param attractionCollection the list of attraction
+   * @param userId the user id
+   * @return a list of attraction dto with rewardPoint field
+   */
   @Override
   public Collection<GetNearbyAttractionDto> calculateRewardsPoints(
       Collection<Attraction> attractionCollection, UUID userId) {
@@ -55,6 +64,11 @@ public class RewardsServiceImpl implements RewardsService {
     return dtoCollection;
   }
 
+  /**
+   * Check the user visited location and add the rewards accordingly.
+   *
+   * @param user the user
+   */
   @Override
   public void addRewards(User user) {
 
@@ -82,6 +96,28 @@ public class RewardsServiceImpl implements RewardsService {
         throw new ResourceNotFoundException("Error, cant reach service.");
       }
     }
+  }
+  @Override
+  public void addRewardsForLastLocation(User user) {
+
+    List<UserReward> userRewards = user.getUserRewards();
+
+    List<UUID> attractionIds = Collections.synchronizedList(new ArrayList<>());
+    userRewards.forEach(ur -> attractionIds.add(ur.attraction().attractionId()));
+
+        CompletableFuture.supplyAsync(
+                        () -> rewardClient.addUserReward(user.getUserId(), user.getLastVisitedLocation()), threadPool)
+                .thenAccept(
+                        userReward -> {
+                          synchronized (attractionIds) {
+                            if (!attractionIds.contains(userReward.attraction().attractionId())) {
+                              userRewards.add(userReward);
+                              attractionIds.add(userReward.attraction().attractionId());
+                            }
+                          }
+                        });
+
+
   }
 
   /**

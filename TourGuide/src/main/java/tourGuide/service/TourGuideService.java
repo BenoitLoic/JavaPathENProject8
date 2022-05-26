@@ -72,7 +72,7 @@ public class TourGuideService {
   void testModeInit() {
     if (testMode) {
       logger.info("TestMode enabled");
-      tracker = new Tracker(this);
+      tracker = new Tracker(this,rewardsService);
       addShutDownHook();
     }
   }

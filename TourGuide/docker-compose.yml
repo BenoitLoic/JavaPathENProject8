@@ -1,0 +1,38 @@
+version: '3'
+services:
+  tourguide-app:
+    build: .
+    ports:
+      - 8099:8099
+    networks:
+      - spring-cloud-network
+    depends_on:
+      - location-service
+      - reward-service
+      - user-service
+  location-service:
+    build:
+      context: ./
+      dockerfile: ./location-service/Dockerfile
+    container_name: location-service
+    ports:
+      - 8081:8081
+    networks:
+      - spring-cloud-network
+  reward-service:
+    image: loicbenoit/rewardservice
+    container_name: reward-service
+    ports:
+      - 8090:8090
+    networks:
+      - spring-cloud-network
+  user-service:
+    image: loicbenoit/userservice
+    container_name: user-service
+    ports:
+      - 8100:8100
+    networks:
+      - spring-cloud-network
+networks:
+  spring-cloud-network:
+    driver: bridge
