@@ -6,7 +6,7 @@ stages:
 build_job:
   stage: build
   script:
-    - TourGuide/
+    - cd TourGuide/
     - ./gradlew bootJar
   image: openjdk:17-alpine
 
@@ -20,7 +20,7 @@ test_job:
 lint-test-job:
   stage: test
   script:
-    - - TourGuide/
+    - cd TourGuide/
     - ./gradlew integrationTest
 image: openjdk:17-alpine
 
