@@ -3,6 +3,10 @@ package tourGuide.user;
 import javax.money.CurrencyUnit;
 import javax.money.Monetary;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIncludeProperties;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.javamoney.moneta.Money;
 
 import java.util.Objects;
@@ -85,12 +89,27 @@ public class UserPreferences {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     UserPreferences that = (UserPreferences) o;
-    return attractionProximity == that.attractionProximity && tripDuration == that.tripDuration && ticketQuantity == that.ticketQuantity && numberOfAdults == that.numberOfAdults && numberOfChildren == that.numberOfChildren && Objects.equals(currency, that.currency) && Objects.equals(lowerPricePoint, that.lowerPricePoint) && Objects.equals(highPricePoint, that.highPricePoint);
+    return attractionProximity == that.attractionProximity
+        && tripDuration == that.tripDuration
+        && ticketQuantity == that.ticketQuantity
+        && numberOfAdults == that.numberOfAdults
+        && numberOfChildren == that.numberOfChildren
+        && Objects.equals(currency, that.currency)
+        && Objects.equals(lowerPricePoint, that.lowerPricePoint)
+        && Objects.equals(highPricePoint, that.highPricePoint);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(attractionProximity, currency, lowerPricePoint, highPricePoint, tripDuration, ticketQuantity, numberOfAdults, numberOfChildren);
+    return Objects.hash(
+        attractionProximity,
+        currency,
+        lowerPricePoint,
+        highPricePoint,
+        tripDuration,
+        ticketQuantity,
+        numberOfAdults,
+        numberOfChildren);
   }
 
   @Override
@@ -99,11 +118,11 @@ public class UserPreferences {
         + "attractionProximity="
         + attractionProximity
         + ", currency="
-        + currency
+        + currency.getCurrencyCode()
         + ", lowerPricePoint="
-        + lowerPricePoint
+        + lowerPricePoint.getNumber()
         + ", highPricePoint="
-        + highPricePoint
+        + highPricePoint.getNumber()
         + ", tripDuration="
         + tripDuration
         + ", ticketQuantity="

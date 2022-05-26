@@ -11,10 +11,7 @@ import tourGuide.exception.ResourceNotFoundException;
 import tourGuide.model.Attraction;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -43,33 +40,28 @@ public class RewardsServiceImpl implements RewardsService {
             attraction -> {
               Integer point = rewardClient.getReward(attraction.attractionId(), userId);
               GetNearbyAttractionDto dto =
-                  new GetNearbyAttractionDto(attraction.attractionName(),
-                          attraction.city(),
-                          attraction.state(),
-                          attraction.attractionId(),
-                          attraction.location().latitude(),
-                          attraction.location().longitude(),
-                          attraction.distance(),
-                          point);
+                  new GetNearbyAttractionDto(
+                      attraction.attractionName(),
+                      attraction.city(),
+                      attraction.state(),
+                      attraction.attractionId(),
+                      attraction.location().latitude(),
+                      attraction.location().longitude(),
+                      attraction.distance(),
+                      point);
               dtoCollection.add(dto);
             });
 
     return dtoCollection;
   }
 
-  /* récupère l'utilisateur
-    récupère les récompenses
-    renvoi les récompenses
-  * */
   @Override
-  public Collection<UserReward> getRewards(User user) {
+  public void addRewards(User user) {
 
     List<UserReward> userRewards = user.getUserRewards();
 
-
-    List<UUID> attractionIds = new ArrayList<>();
+    List<UUID> attractionIds = Collections.synchronizedList(new ArrayList<>());
     userRewards.forEach(ur -> attractionIds.add(ur.attraction().attractionId()));
-    List<UserReward> userRewardsReturnList = new ArrayList<>();
 
     for (VisitedLocation visitedLocation : user.getVisitedLocations()) {
 
@@ -78,18 +70,29 @@ public class RewardsServiceImpl implements RewardsService {
                 () -> rewardClient.addUserReward(user.getUserId(), visitedLocation), threadPool)
             .thenAccept(
                 userReward -> {
-                  userRewardsReturnList.add(userReward);
-                  if (!attractionIds.contains(userReward.attraction().attractionId())) {
-                    user.addUserReward(userReward);
+                  synchronized (attractionIds) {
+                    if (!attractionIds.contains(userReward.attraction().attractionId())) {
+                      userRewards.add(userReward);
+                      attractionIds.add(userReward.attraction().attractionId());
+                    }
                   }
                 });
-      } catch (FeignException.FeignClientException fce) {
+      } catch (feign.FeignException fce) {
         logger.error("Error, Feign client failed." + fce);
         throw new ResourceNotFoundException("Error, cant reach service.");
       }
     }
+  }
 
-    return userRewardsReturnList;
+  /**
+   * Get all the rewards already owned by a user.
+   *
+   * @param user the user
+   * @return a list of user's rewards
+   */
+  @Override
+  public Collection<UserReward> getRewards(User user) {
+    return user.getUserRewards();
   }
 
   public void awaitTerminationAfterShutdown() {

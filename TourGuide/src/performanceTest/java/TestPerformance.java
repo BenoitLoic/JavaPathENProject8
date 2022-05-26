@@ -1,4 +1,3 @@
-
 import gpsUtil.GpsUtil;
 import org.junit.jupiter.api.*;
 import org.springframework.test.context.ActiveProfiles;
@@ -29,7 +28,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest(classes = Application.class)
- @ActiveProfiles("test")
+@ActiveProfiles("test")
 @EnableConfigurationProperties
 @ExtendWith(SpringExtension.class)
 public class TestPerformance {
@@ -68,7 +67,6 @@ public class TestPerformance {
    *          assertTrue(TimeUnit.MINUTES.toSeconds(20) >= TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()));
    */
 
-
   @Test
   public void highVolumeTrackLocation() {
 
@@ -98,7 +96,6 @@ public class TestPerformance {
         TimeUnit.MINUTES.toSeconds(15) >= TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()));
   }
 
-
   @Test
   public void highVolumeGetRewards() {
     GpsUtil gpsUtil = new GpsUtil();
@@ -115,6 +112,9 @@ public class TestPerformance {
     gpsUtil.location.Attraction temp = gpsUtil.getAttractions().get(0);
 
     List<User> allUsers = tourGuideService.getAllUsers();
+
+    System.out.println(allUsers.get(100).getUserRewards().size());
+
     allUsers.forEach(User::clearVisitedLocations);
     allUsers.forEach(
         u ->
@@ -122,12 +122,14 @@ public class TestPerformance {
                 new VisitedLocation(
                     u.getUserId(), new Location(temp.longitude, temp.latitude), new Date())));
 
-    allUsers.forEach(u -> rewardsService.getRewards(u));
+    allUsers.forEach(u -> rewardsService.addRewards(u));
 
     rewardsService.awaitTerminationAfterShutdown();
-
+    int count = 0;
     for (User user : allUsers) {
+      count++;
       assertTrue(user.getUserRewards().size() > 0);
+      System.out.println(count);
     }
     stopWatch.stop();
     //    tourGuideService.tracker.stopTracking();
