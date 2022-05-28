@@ -11,9 +11,7 @@ services:
       - reward-service
       - user-service
   location-service:
-    build:
-      context: ./
-      dockerfile: ./location-service/Dockerfile
+    image: loicbenoit/locationservice
     container_name: location-service
     ports:
       - 8081:8081
