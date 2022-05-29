@@ -47,7 +47,7 @@ import org.springframework.stereotype.Service;
 public class TourGuideService {
   public Tracker tracker;
   protected final Logger logger = LoggerFactory.getLogger(TourGuideService.class);
-  private final ExecutorService executorService = Executors.newFixedThreadPool(100);
+  private final ExecutorService executorService = Executors.newFixedThreadPool(200);
   private final Map<String, User> internalUserMap;
 
   @Value("${tourGuide.testMode}")
@@ -70,20 +70,11 @@ public class TourGuideService {
 
   @PostConstruct
   void testModeInit() {
-    if (testMode) {
+    if (!testMode) {
       logger.info("TestMode enabled");
       tracker = new Tracker(this,rewardsService);
       addShutDownHook();
     }
-  }
-  /**
-   * This method return the list of rewards owned by the given user.
-   *
-   * @param user the user
-   * @return a list of rewards
-   */
-  public List<UserReward> getUserRewards(User user) {
-    return user.getUserRewards();
   }
 
   /**

@@ -2,33 +2,39 @@ stages:
   - build
   - test
 
+image: gradle:7-jdk17-alpine
+
 build_job:
   stage: build
   script:
     - cd TourGuide/
     - ./gradlew bootJar
-  image: gradle:7-jdk17-alpine
   artifacts:
+    name: TourGuideAPP_build_artifact
     paths:
       - TourGuide/build/libs/*.jar
+      - Dockerfile
+      - docker-compose.yml
+      - docker-compose-test.yml
 
 unitTest_job:
   stage: test
   script:
     - cd TourGuide/
     - ./gradlew test
-  image: gradle:7-jdk17-alpine
   artifacts:
+    name: Unit_test_artifact
     paths:
       - TourGuide/build/reports/jacoco/test/jacocoTestReport.xml
       - TourGuide/build/jacocoUTHtml/
+      - TourGuide/build/reports/tests/test
 
 integrationTest_job:
   stage: test
   script:
     - cd TourGuide/
     - ./gradlew integrationTest
-  image: gradle:7-jdk17-alpine
   artifacts:
+    name: IT_artifact
     paths:
       - TourGuide/build/reports/jacoco/jacocoIntegrationTestReport/jacocoIntegrationTestReport.xml

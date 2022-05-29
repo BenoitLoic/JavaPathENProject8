@@ -3,6 +3,7 @@ import feign.FeignException;
 import org.hamcrest.core.IsEqual;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -41,7 +42,7 @@ public class TourGuideIT {
 
   private final UUID userId = UUID.randomUUID();
   private final Date dateTest = new Date();
-  private  VisitedLocation visitedLocationTest;
+  private VisitedLocation visitedLocationTest;
 
   @Autowired MockMvc mockMvc;
   @Autowired ObjectMapper objectMapper;
@@ -50,11 +51,10 @@ public class TourGuideIT {
   @BeforeEach
   void setUp() {
 
-    visitedLocationTest =
-            new VisitedLocation(userId, new Location(50.54, 20.), dateTest);
-
+    visitedLocationTest = new VisitedLocation(userId, new Location(50.54, 20.), dateTest);
   }
-  @RepeatedTest(value = 10)
+
+  @Test
   void getLocationValid() throws Exception {
 
     // GIVEN
@@ -62,7 +62,6 @@ public class TourGuideIT {
     // WHEN
     when(locationClientMock.getLocation(Mockito.any())).thenReturn(visitedLocationTest);
     // THEN
-    System.out.println("avant le premier perform");
     mockMvc
         .perform(get(Url.GETLOCATION).param("userName", userName))
         .andExpect(MockMvcResultMatchers.status().isOk())
@@ -70,7 +69,8 @@ public class TourGuideIT {
         .andExpect(jsonPath("$.latitude", is(20.0)))
         .andExpect(jsonPath("$.longitude", is(50.54)));
   }
-  @RepeatedTest(value = 10)
+
+  @Test
   void getLocationInvalid() throws Exception {
     mockMvc
         .perform(get(Url.GETLOCATION).param("userName", ""))
@@ -80,7 +80,8 @@ public class TourGuideIT {
                 assertThat(result.getResolvedException() instanceof IllegalArgumentException)
                     .isTrue());
   }
-  @RepeatedTest(value = 10)
+
+  @Test
   void getLocationWhenUserDoesntExist_ShouldThrowDataNotFoundException() throws Exception {
 
     mockMvc
@@ -91,7 +92,8 @@ public class TourGuideIT {
                 assertThat(result.getResolvedException() instanceof DataNotFoundException)
                     .isTrue());
   }
-  @RepeatedTest(value = 10)
+
+  @Test
   void getAllCurrentLocations() throws Exception {
 
     // GIVEN
@@ -118,7 +120,7 @@ public class TourGuideIT {
         .andExpect(result -> assertThat(result.getResponse().getContentAsString()).isEqualTo(json));
   }
 
-  @RepeatedTest(value = 10)
+  @Test
   void getAllCurrentLocations_ShouldThrowDataNotFoundException() throws Exception {
 
     // WHEN

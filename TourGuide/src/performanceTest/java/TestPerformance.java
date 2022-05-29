@@ -35,7 +35,6 @@ public class TestPerformance {
 
   @Autowired LocationClient locationClient;
   @Autowired UserClient userClient;
-  //  @Autowired TourGuideService tourGuideService;
   @Autowired RewardsServiceImpl rewardsService;
   @Autowired TourGuideService tourGuideService;
 
