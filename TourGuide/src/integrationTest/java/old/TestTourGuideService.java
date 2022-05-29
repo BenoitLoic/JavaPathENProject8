@@ -6,7 +6,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.RepeatedTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -21,13 +22,14 @@ import tourGuide.service.TourGuideService;
 import tourGuide.service.TripDealsService;
 import tourGuide.service.TripDealsServiceImpl;
 import tourGuide.user.User;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import tripPricer.Provider;
 import tripPricer.TripPricer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@Disabled("Need Feign Client Services UP")
 @SpringBootTest(classes = Application.class)
 @ActiveProfiles("test")
 public class TestTourGuideService {

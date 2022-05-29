@@ -2,7 +2,6 @@ package old;
 
 import gpsUtil.GpsUtil;
 import gpsUtil.location.Attraction;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +27,6 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Disabled("Need Feign Client Services UP")
 @SpringBootTest(classes = Application.class)
 @ActiveProfiles("test")
 public class TestRewardsService {

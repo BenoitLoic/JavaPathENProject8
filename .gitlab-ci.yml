@@ -2,12 +2,13 @@ stages:
   - build
   - test
 
+image: gradle:7-jdk17-alpine
+
 build_job:
   stage: build
   script:
     - cd TourGuide/
     - ./gradlew bootJar
-  image: gradle:7-jdk17-alpine
   artifacts:
     name: TourGuideAPP_build_artifact
     paths:
@@ -21,7 +22,6 @@ unitTest_job:
   script:
     - cd TourGuide/
     - ./gradlew test
-  image: gradle:7-jdk17-alpine
   artifacts:
     name: Unit_test_artifact
     paths:
@@ -34,7 +34,6 @@ integrationTest_job:
   script:
     - cd TourGuide/
     - ./gradlew integrationTest
-  image: gradle:7-jdk17-alpine
   artifacts:
     name: IT_artifact
     paths:
