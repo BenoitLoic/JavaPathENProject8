@@ -60,7 +60,6 @@ public class TripDealsIT {
 
   @BeforeEach
   void setUp() {
-    tourGuideService.getAllUsers();
     Attraction attraction = new Attraction(
             "attractionName",
             "cityTest",
@@ -84,7 +83,6 @@ public class TripDealsIT {
     user.addUserReward(userReward);
     user.setUserPreferences(userPreferences);
     tourGuideService.addUser(user);
-    System.out.println(user);
 
     // WHEN
 

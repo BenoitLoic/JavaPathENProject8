@@ -18,14 +18,14 @@ import java.util.stream.IntStream;
 public class InternalTestRepository {
 
     private static final Logger logger = LoggerFactory.getLogger(InternalTestRepository.class);
-    protected final Map<String, User> internalUserMap = new ConcurrentHashMap<>();
+    protected static final Map<String, User> internalUserMap = new ConcurrentHashMap<>();
 
 
     public InternalTestRepository() {
         initializeInternalUsers();
     }
 
-    public Map<String,User> getInternalUserMap(){
+    public static Map<String,User> getInternalUserMap(){
         return internalUserMap;
     }
 

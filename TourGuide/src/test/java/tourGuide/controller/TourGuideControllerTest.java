@@ -57,7 +57,6 @@ class TourGuideControllerTest {
   @Autowired ObjectMapper MAPPER;
   @MockBean TourGuideService tourGuideServiceMock;
   @MockBean RewardsServiceImpl rewardsServiceMock;
-  @MockBean TripDealsServiceImpl tripDealsServiceMock;
 
   @Test
   void index() throws Exception {
@@ -156,55 +155,7 @@ class TourGuideControllerTest {
             result -> assertTrue(result.getResolvedException() instanceof DataNotFoundException));
   }
 
-  @Test
-  void getRewardsValid() throws Exception {
 
-    // GIVEN
-    List<UserReward> userRewards =
-        Arrays.asList(
-            new UserReward(userId, visitedLocationTest, attractionTest, 5),
-            new UserReward(userId, visitedLocationTest, attractionTest, 5),
-            new UserReward(userId, visitedLocationTest, attractionTest, 5));
-    // WHEN
-    when(tourGuideServiceMock.getUser(anyString())).thenReturn(validUser);
-    when(rewardsServiceMock.getRewards(Mockito.any())).thenReturn(userRewards);
-    // THEN
-    mockMvc
-        .perform(get(Url.GET_REWARDS).param("userName", validUserName))
-        .andExpect(status().isOk())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-  }
-
-  @Test
-  void getRewardsInvalid() throws Exception {
-
-    // GIVEN
-
-    // WHEN
-
-    // THEN
-    mockMvc
-        .perform(get(Url.GET_REWARDS).param("userName", ""))
-        .andExpect(status().isBadRequest())
-        .andExpect(
-            result ->
-                assertTrue(result.getResolvedException() instanceof IllegalArgumentException));
-  }
-
-  @Test
-  void getRewardsWhenUserDoesntExist_ShouldThrowDataNotFoundException() throws Exception {
-
-    // GIVEN
-
-    // WHEN
-    doThrow(DataNotFoundException.class).when(tourGuideServiceMock).getUser(Mockito.anyString());
-    // THEN
-    mockMvc
-        .perform(get(GET_REWARDS).param("userName", validUserName))
-        .andExpect(status().isNotFound())
-        .andExpect(
-            result -> assertTrue(result.getResolvedException() instanceof DataNotFoundException));
-  }
 
   // doit retourner toutes la derniere position connue pour tout les utilisateurs.
   // cette position doit etre récupéré dans les données sauvegardés de l'utilisateur.

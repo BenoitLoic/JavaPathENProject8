@@ -26,7 +26,6 @@ public class TourGuideController {
   private final Logger logger = LoggerFactory.getLogger(TourGuideController.class);
   @Autowired TourGuideService tourGuideService;
   @Autowired RewardsService rewardsService;
-  @Autowired TripDealsService tripDealsService;
 
   @RequestMapping(value = INDEX)
   public String index() {
@@ -63,25 +62,6 @@ public class TourGuideController {
   }
 
   /**
-   * This method get the reward points owned by the user.
-   *
-   * @param userName the user's userName
-   * @return the reward points as Json
-   */
-  @GetMapping(value = GET_REWARDS)
-  public Collection<UserReward> getRewards(@RequestParam String userName) {
-
-    if (userName == null || userName.isBlank()) {
-      logger.warn("error, username is mandatory. username: " + userName);
-      throw new IllegalArgumentException("error, username is mandatory.");
-    }
-
-    User user = tourGuideService.getUser(userName);
-
-    return rewardsService.getRewards(user);
-  }
-
-  /**
    * This method get a list of every user's most recent location as JSON
    *
    * @return JSON mapping of userId : Locations
@@ -101,12 +81,7 @@ public class TourGuideController {
   @GetMapping("/getUser")
   private User getUser(@RequestParam String userName) {
 
-    User user = tourGuideService.getUser(userName);
-    if (user == null) {
-      logger.warn("Error, user :" + userName + " doesn't exist.");
-      throw new DataNotFoundException("Error, user : " + userName + " doesn't exist.");
-    }
-    return user;
+    return tourGuideService.getUser(userName);
   }
 
 }
