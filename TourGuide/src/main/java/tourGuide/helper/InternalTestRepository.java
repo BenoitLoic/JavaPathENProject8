@@ -2,6 +2,7 @@ package tourGuide.helper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 import tourGuide.model.Location;
 import tourGuide.model.VisitedLocation;
 import tourGuide.user.User;
@@ -15,6 +16,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.IntStream;
 
+@Component
 public class InternalTestRepository {
 
     private static final Logger logger = LoggerFactory.getLogger(InternalTestRepository.class);

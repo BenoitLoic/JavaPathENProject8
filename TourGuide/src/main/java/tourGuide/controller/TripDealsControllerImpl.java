@@ -8,7 +8,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import tourGuide.dto.AddUserPreferencesDto;
 import tourGuide.exception.IllegalArgumentException;
-import tourGuide.service.TourGuideService;
+import tourGuide.service.UserService;
 import tourGuide.service.TripDealsService;
 import tourGuide.user.User;
 import tripPricer.Provider;
@@ -24,7 +24,7 @@ import static tourGuide.config.Url.GET_TRIP_DEALS;
 public class TripDealsControllerImpl implements TripDealsController {
 
   private final Logger logger = LoggerFactory.getLogger(TourGuideController.class);
-  @Autowired private TourGuideService tourGuideService;
+  @Autowired private UserService userService;
   @Autowired private TripDealsService tripDealsService;
   /**
    * This method get a list of TripDeals (providers) for given user. TripDeals are based on user
@@ -43,7 +43,7 @@ public class TripDealsControllerImpl implements TripDealsController {
       logger.warn("error, username is mandatory. username: " + userName);
       throw new IllegalArgumentException("error, username is mandatory.");
     }
-    User user = tourGuideService.getUser(userName);
+    User user = userService.getUser(userName);
 
     return tripDealsService.getTripDeals(user, attractionId);
   }

@@ -16,10 +16,7 @@ import tourGuide.client.UserClient;
 import tourGuide.dto.GetNearbyAttractionDto;
 import tourGuide.helper.InternalTestHelper;
 import tourGuide.model.Location;
-import tourGuide.service.RewardsService;
-import tourGuide.service.TourGuideService;
-import tourGuide.service.TripDealsService;
-import tourGuide.service.TripDealsServiceImpl;
+import tourGuide.service.*;
 import tourGuide.user.User;
 import tripPricer.Provider;
 import tripPricer.TripPricer;
@@ -38,6 +35,7 @@ public class TestTourGuideService {
   @Autowired LocationClient locationClientMock;
   @Autowired UserClient userClientMock;
   @Autowired RewardsService rewardsServiceMock;
+  @Autowired UserService userService;
 
   @BeforeAll
   static void beforeAll() {
@@ -53,8 +51,8 @@ public class TestTourGuideService {
 
   @Test
   public void getUserLocation() {
-    TourGuideService tourGuideService =
-        new TourGuideService(locationClientMock, userClientMock, rewardsServiceMock);
+    LocationService tourGuideService =
+        new LocationServiceImpl();
 
     User user = new User(UUID.randomUUID(), username1, "000", "jon@tourGuide.com");
     tourGuideService.trackUserLocation(user);
@@ -67,18 +65,15 @@ public class TestTourGuideService {
   @Test
   public void addUser() {
 
-    TourGuideService tourGuideService =
-        new TourGuideService(locationClientMock, userClientMock, rewardsServiceMock);
 
     User user = new User(UUID.randomUUID(), username1, "000", "jon@tourGuide.com");
     User user2 = new User(UUID.randomUUID(), username2, "000", "jon2@tourGuide.com");
 
-    System.out.println(user);
-    tourGuideService.addUser(user);
-    tourGuideService.addUser(user2);
+    userService.addUser(user);
+    userService.addUser(user2);
 
-    User retrievedUser = tourGuideService.getUser(user.getUserName());
-    User retrievedUser2 = tourGuideService.getUser(user2.getUserName());
+    User retrievedUser = userService.getUser(user.getUserName());
+    User retrievedUser2 = userService.getUser(user2.getUserName());
 
     assertEquals(user, retrievedUser);
     assertEquals(user2, retrievedUser2);
@@ -87,15 +82,13 @@ public class TestTourGuideService {
   @Test
   public void getAllUsers() {
 
-    TourGuideService tourGuideService =
-        new TourGuideService(locationClientMock, userClientMock, rewardsServiceMock);
     User user = new User(UUID.randomUUID(), username1, "000", "jon@tourGuide.com");
     User user2 = new User(UUID.randomUUID(), username2, "000", "jon2@tourGuide.com");
 
-    tourGuideService.addUser(user);
-    tourGuideService.addUser(user2);
+    userService.addUser(user);
+    userService.addUser(user2);
 
-    List<User> allUsers = tourGuideService.getAllUsers();
+    List<User> allUsers = userService.getAllUsers();
 
     assertTrue(allUsers.contains(user));
     assertTrue(allUsers.contains(user2));
@@ -103,40 +96,36 @@ public class TestTourGuideService {
 
   @Test
   public void trackUser() {
-    TourGuideService tourGuideService =
-        new TourGuideService(locationClientMock, userClientMock, rewardsServiceMock);
+    LocationService locationService = new LocationServiceImpl();
 
     User user = new User(UUID.randomUUID(), username1, "000", "jon@tourGuide.com");
 
     assertEquals(0, user.getVisitedLocations().size());
-    tourGuideService.trackUserLocation(user);
-    tourGuideService.awaitTerminationAfterShutdown();
+    locationService.trackUserLocation(user);
+    locationService.awaitTerminationAfterShutdown();
     assertEquals(user.getUserId(), user.getVisitedLocations().get(0).userId());
   }
 
   @Test
   public void getNearbyAttractions() {
 
-    TourGuideService tourGuideService =
-        new TourGuideService(locationClientMock, userClientMock, rewardsServiceMock);
+    LocationService locationService = new LocationServiceImpl();
 
     User user = new User(UUID.randomUUID(), username1, "000", "jon@tourGuide.com");
-    tourGuideService.addUser(user);
-    tourGuideService.trackUserLocation(user);
+    userService.addUser(user);
+    locationService.trackUserLocation(user);
 
     Map<Location, Collection<GetNearbyAttractionDto>> attractions =
-        tourGuideService.getNearbyAttractions(user.getUserName());
+        locationService.getNearbyAttractions(user.getUserName());
 
     assertEquals(5, attractions.entrySet().stream().findFirst().get().getValue().size());
   }
 
   @Test
   public void getTripDeals() {
-    TourGuideService tourGuideService =
-        new TourGuideService(locationClientMock, userClientMock, rewardsServiceMock);
 
     TripDealsService tripDealsService =
-        new TripDealsServiceImpl(new TripPricer(), tourGuideService);
+        new TripDealsServiceImpl(new TripPricer(), userService);
 
     User user = new User(UUID.randomUUID(), username1, "000", "jon@tourGuide.com");
 

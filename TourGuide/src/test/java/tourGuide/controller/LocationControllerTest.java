@@ -1,17 +1,15 @@
 package tourGuide.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import tourGuide.config.Url;
 import tourGuide.exception.DataNotFoundException;
 import tourGuide.exception.IllegalArgumentException;
 import tourGuide.exception.ResourceNotFoundException;
 import tourGuide.model.Attraction;
 import tourGuide.model.Location;
-import tourGuide.model.UserReward;
 import tourGuide.model.VisitedLocation;
+import tourGuide.service.LocationServiceImpl;
 import tourGuide.service.RewardsServiceImpl;
-import tourGuide.service.TourGuideService;
-import tourGuide.service.TripDealsServiceImpl;
+import tourGuide.service.UserService;
 import tourGuide.user.User;
 
 import java.util.*;
@@ -33,9 +31,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static tourGuide.config.Url.*;
 
-@WebMvcTest(controllers = TourGuideController.class)
+@WebMvcTest(controllers = LocationControllerImpl.class)
 @AutoConfigureMockMvc
-class TourGuideControllerTest {
+class LocationControllerTest {
 
   private final UUID userId = UUID.randomUUID();
   private static final String validUserName = "userName";
@@ -55,21 +53,20 @@ class TourGuideControllerTest {
           null);
   @Autowired MockMvc mockMvc;
   @Autowired ObjectMapper MAPPER;
-  @MockBean TourGuideService tourGuideServiceMock;
+  @MockBean
+  LocationServiceImpl locationServiceMock;
   @MockBean RewardsServiceImpl rewardsServiceMock;
+  @MockBean
+  UserService userServiceMock;
 
-  @Test
-  void index() throws Exception {
-    mockMvc.perform(get(INDEX)).andExpect(status().isOk());
-  }
 
   @Test
   void getLocationValid() throws Exception {
     // GIVEN
 
     // WHEN
-    when(tourGuideServiceMock.getUser(any())).thenReturn(validUser);
-    when(tourGuideServiceMock.getUserLocation(Mockito.any())).thenReturn(visitedLocationTest);
+    when(userServiceMock.getUser(any())).thenReturn(validUser);
+    when(locationServiceMock.getUserLocation(Mockito.any())).thenReturn(visitedLocationTest);
     // THEN
     mockMvc
         .perform(get(GET_LOCATION).param("userName", "validUserName"))
@@ -92,7 +89,7 @@ class TourGuideControllerTest {
     // GIVEN
 
     // WHEN
-    when(tourGuideServiceMock.getUserLocation(any())).thenThrow(DataNotFoundException.class);
+    when(locationServiceMock.getUserLocation(any())).thenThrow(DataNotFoundException.class);
 
     // THEN
     mockMvc
@@ -114,7 +111,7 @@ class TourGuideControllerTest {
     // GIVEN
 
     // WHEN
-    when(tourGuideServiceMock.getNearbyAttractions(Mockito.any())).thenReturn(new HashMap<>());
+    when(locationServiceMock.getNearbyAttractions(Mockito.any())).thenReturn(new HashMap<>());
     // THEN
     mockMvc
         .perform(get(GET_NEARBY_ATTRACTIONS).param("userName", validUserName))
@@ -145,7 +142,7 @@ class TourGuideControllerTest {
 
     // WHEN
     Mockito.doThrow(DataNotFoundException.class)
-        .when(tourGuideServiceMock)
+        .when(locationServiceMock)
         .getNearbyAttractions(any());
     // THEN
     mockMvc
@@ -166,7 +163,7 @@ class TourGuideControllerTest {
     // GIVEN
 
     // WHEN
-    when(tourGuideServiceMock.getAllCurrentLocations()).thenReturn(new HashMap<>());
+    when(locationServiceMock.getAllCurrentLocations()).thenReturn(new HashMap<>());
     // THEN
     mockMvc
         .perform(get(GET_ALL_CURRENT_LOCATIONS))
@@ -184,7 +181,7 @@ class TourGuideControllerTest {
     String json = MAPPER.writeValueAsString(returnMap);
 
     // WHEN
-    when(tourGuideServiceMock.getAllCurrentLocations()).thenReturn(returnMap);
+    when(locationServiceMock.getAllCurrentLocations()).thenReturn(returnMap);
     // THEN
     mockMvc
         .perform(get(GET_ALL_CURRENT_LOCATIONS))
@@ -197,7 +194,7 @@ class TourGuideControllerTest {
   @Test
   void getAllCurrentLocations_ShouldThrowResourceNotFoundException() throws Exception {
 
-    doThrow(ResourceNotFoundException.class).when(tourGuideServiceMock).getAllCurrentLocations();
+    doThrow(ResourceNotFoundException.class).when(locationServiceMock).getAllCurrentLocations();
 
     mockMvc
         .perform(get(GET_ALL_CURRENT_LOCATIONS))

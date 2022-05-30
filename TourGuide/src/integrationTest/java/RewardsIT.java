@@ -1,6 +1,4 @@
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +9,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.ResultActions;
 import tourGuide.Application;
 import tourGuide.client.RewardClient;
 import tourGuide.config.Url;
@@ -22,7 +19,7 @@ import tourGuide.model.Attraction;
 import tourGuide.model.Location;
 import tourGuide.model.UserReward;
 import tourGuide.model.VisitedLocation;
-import tourGuide.service.TourGuideService;
+import tourGuide.service.UserServiceImpl;
 import tourGuide.user.User;
 
 import java.util.Arrays;
@@ -51,7 +48,7 @@ public class RewardsIT {
   @Autowired ObjectMapper objectMapper;
   @MockBean RewardClient rewardClientMock;
   @Autowired
-  TourGuideService tourGuideService;
+  UserServiceImpl tourGuideService;
 
   @BeforeEach
   void setUp() {

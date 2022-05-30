@@ -5,10 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.stubbing.OngoingStubbing;
 import tourGuide.dto.AddUserPreferencesDto;
 import tourGuide.model.Attraction;
 import tourGuide.model.Location;
@@ -36,7 +34,8 @@ public class TripDealsServiceTest {
   private final String phoneNumber = "phoneTest";
   private final String email = "emailTest";
 
-  @Mock TourGuideService tourGuideServiceMock;
+  @Mock
+  UserServiceImpl userServiceImplMock;
   @Mock TripPricerTask tripPricerTaskMock;
   @Spy TripPricer tripPricerMock;
 
@@ -107,7 +106,7 @@ public class TripDealsServiceTest {
     expected.setNumberOfChildren(userPreferencesToAdd.numberOfChildren());
 
     // WHEN
-    when(tourGuideServiceMock.getUser(anyString())).thenReturn(user);
+    when(userServiceImplMock.getUser(anyString())).thenReturn(user);
     // THEN
     tripDealsService.addUserPreferences(userPreferencesToAdd);
     assertThat(user.getUserPreferences()).isEqualTo(expected);

@@ -1,78 +1,48 @@
 package tourGuide.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import feign.Feign;
-import feign.FeignException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 import tourGuide.client.LocationClient;
-import tourGuide.client.UserClient;
-import tourGuide.dto.AddNewUser;
 import tourGuide.dto.GetNearbyAttractionDto;
 import tourGuide.exception.DataNotFoundException;
 import tourGuide.exception.ResourceNotFoundException;
-import tourGuide.helper.InternalTestHelper;
-import tourGuide.helper.InternalTestRepository;
 import tourGuide.model.Attraction;
 import tourGuide.model.Location;
-import tourGuide.model.UserReward;
 import tourGuide.model.VisitedLocation;
 import tourGuide.tracker.Tracker;
 import tourGuide.user.User;
-import tripPricer.Provider;
-import tripPricer.TripPricer;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+
+import javax.annotation.PostConstruct;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.IntStream;
-import javax.annotation.PostConstruct;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 
-@edu.umd.cs.findbugs.annotations.SuppressFBWarnings("DMI_RANDOM_USED_ONLY_ONCE")
 @Service
-public class TourGuideService {
-  public Tracker tracker;
-  protected final Logger logger = LoggerFactory.getLogger(TourGuideService.class);
-  private final ExecutorService executorService = Executors.newFixedThreadPool(200);
-  private final Map<String, User> internalUserMap;
+public class LocationServiceImpl implements LocationService {
 
+  public Tracker tracker;
+  private final Logger logger = LoggerFactory.getLogger(LocationServiceImpl.class);
   @Value("${tourGuide.testMode}")
   boolean testMode;
+  private final ExecutorService executorService = Executors.newFixedThreadPool(200);
+  @Autowired private LocationClient locationClient;
+  @Autowired private RewardsService rewardsService;
+  @Autowired private UserService userService;
 
-  private final LocationClient locationClient;
-  private final UserClient userClient;
-  private final RewardsService rewardsService;
-
-  public TourGuideService(
-      LocationClient locationClient, UserClient userClient, RewardsService rewardsService) {
-    this.locationClient = locationClient;
-    this.userClient = userClient;
-    this.rewardsService = rewardsService;
-    logger.debug("Initializing users");
-    InternalTestRepository internalTestRepository = new InternalTestRepository();
-    internalUserMap = internalTestRepository.getInternalUserMap();
-    logger.debug("Finished initializing users");
-  }
 
   @PostConstruct
   void testModeInit() {
     if (!testMode) {
       logger.info("TestMode enabled");
-      tracker = new Tracker(this,rewardsService);
+      tracker = new Tracker(this,rewardsService,userService);
       addShutDownHook();
     }
   }
@@ -84,69 +54,18 @@ public class TourGuideService {
    * @param user the user
    * @return the last visited location if exists, or the actual location
    */
+  @Override
   public VisitedLocation getUserLocation(User user) {
-
     user.addToVisitedLocations(locationClient.getLocation(user.getUserId()));
-
     return user.getLastVisitedLocation();
   }
 
-  /**
-   * INTERNAL TEST METHOD this method get the user with the given username.
-   *
-   * @param userName the username
-   * @return the user
-   */
-  public User getUser(String userName) {
-    User user = internalUserMap.get(userName);
-    if (user == null) {
-      logger.warn("Error, username : " + userName + " doesn't exist.");
-      throw new DataNotFoundException("error user doesn't exist.");
-    }
-    return user;
-  }
-
-  /**
-   * INTERNAL TEST METHOD this method get the list of all users.
-   *
-   * @return the list of users
-   */
-  public CopyOnWriteArrayList<User> getAllUsers() {
-    return new CopyOnWriteArrayList<>(internalUserMap.values());
-  }
-
-  /**
-   * INTERNAL TEST METHOD This method add a new user to the database.
-   *
-   * @param user the user to add
-   */
-  public void addUser(User user) {
-    if (!internalUserMap.containsKey(user.getUserName())) {
-      logger.debug("add new user:"+user.getUserName());
-      internalUserMap.put(user.getUserName(), user);
-    }
-    AddNewUser newUser =
-        new AddNewUser(user.getUserName(), user.getPhoneNumber(), user.getEmailAddress());
-    userClient.addUser(newUser);
-
-  }
-
-  public void awaitTerminationAfterShutdown() {
-    executorService.shutdown();
-    try {
-      if (!executorService.awaitTermination(20, TimeUnit.MINUTES)) {
-        executorService.shutdownNow();
-      }
-    } catch (InterruptedException ex) {
-      executorService.shutdownNow();
-      Thread.currentThread().interrupt();
-    }
-  }
   /**
    * This method add the actual location as visitedLocation for the user.
    *
    * @param user the user
    */
+  @Override
   public void trackUserLocation(User user) {
 
     CompletableFuture.supplyAsync(
@@ -164,11 +83,12 @@ public class TourGuideService {
    * @param userName the username
    * @return a list with the 5 closest attraction in range
    */
+  @Override
   public Map<Location, Collection<GetNearbyAttractionDto>> getNearbyAttractions(String userName) {
 
     try {
 
-      User user = userClient.getUserByUsername(userName);
+      User user = userService.getUser(userName);
 
       if (user == null || user.getUserId() == null) {
         logger.warn("Error, user :" + userName + " doesn't exist.");
@@ -206,6 +126,7 @@ public class TourGuideService {
    *
    * @return a map with the user id : last location saved
    */
+  @Override
   public Map<UUID, Location> getAllCurrentLocations() {
     try {
       return locationClient.getAllLastLocation();
@@ -215,7 +136,25 @@ public class TourGuideService {
     }
   }
 
+  /**
+   * This method wait for the active threads from executorService to end gracefully or else shutdown
+   * after the timeout
+   */
+  @Override
+  public void awaitTerminationAfterShutdown() {
+    executorService.shutdown();
+    try {
+      if (!executorService.awaitTermination(20, TimeUnit.MINUTES)) {
+        executorService.shutdownNow();
+      }
+    } catch (InterruptedException ex) {
+      executorService.shutdownNow();
+      Thread.currentThread().interrupt();
+    }
+  }
+
   private void addShutDownHook() {
     Runtime.getRuntime().addShutdownHook(new Thread(() -> tracker.stopTracking()));
   }
+
 }

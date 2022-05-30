@@ -4,12 +4,9 @@ import gpsUtil.GpsUtil;
 import gpsUtil.location.Attraction;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import tourGuide.Application;
 import tourGuide.client.LocationClient;
 import tourGuide.client.RewardClient;
@@ -19,7 +16,7 @@ import tourGuide.model.Location;
 import tourGuide.model.UserReward;
 import tourGuide.model.VisitedLocation;
 import tourGuide.service.RewardsServiceImpl;
-import tourGuide.service.TourGuideService;
+import tourGuide.service.UserServiceImpl;
 import tourGuide.user.User;
 
 import java.util.Date;
@@ -64,9 +61,9 @@ public class TestRewardsService {
   public void nearAllAttractions()  {
     GpsUtil gpsUtil = new GpsUtil();
     RewardsServiceImpl rewardsService = new RewardsServiceImpl(rewardClient);
-    TourGuideService tourGuideService =
-        new TourGuideService(locationClient, userClient, rewardsService);
-    User user = tourGuideService.getAllUsers().get(0);
+    UserServiceImpl userServiceImpl =
+        new UserServiceImpl(userClient);
+    User user = userServiceImpl.getAllUsers().get(0);
     // clear visited location to avoid duplicate during test
     // (attractionId from gpsUtil and locationClient.gpsUtil are different)
     user.clearVisitedLocations();

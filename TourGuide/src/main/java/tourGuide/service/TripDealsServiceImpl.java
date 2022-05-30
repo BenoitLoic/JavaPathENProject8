@@ -23,11 +23,11 @@ public class TripDealsServiceImpl implements TripDealsService {
 
   protected final Logger logger = LoggerFactory.getLogger(TripDealsServiceImpl.class);
   private final TripPricer tripPricer;
-  private final TourGuideService tourGuideService;
+  private final UserService userService;
 
-  public TripDealsServiceImpl(TripPricer tripPricer, TourGuideService tourGuideService) {
+  public TripDealsServiceImpl(TripPricer tripPricer, UserService userService) {
     this.tripPricer = tripPricer;
-    this.tourGuideService = tourGuideService;
+    this.userService = userService;
   }
 
   /**
@@ -61,7 +61,7 @@ public class TripDealsServiceImpl implements TripDealsService {
   @Override
   public void addUserPreferences(AddUserPreferencesDto userPreferencesDto) {
 
-    User user = tourGuideService.getUser(userPreferencesDto.username());
+    User user = userService.getUser(userPreferencesDto.username());
 
     UserPreferences userPreferences = new UserPreferences();
 

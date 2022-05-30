@@ -16,7 +16,7 @@ import tourGuide.exception.IllegalArgumentException;
 import tourGuide.model.Attraction;
 import tourGuide.model.Location;
 import tourGuide.model.VisitedLocation;
-import tourGuide.service.TourGuideService;
+import tourGuide.service.UserServiceImpl;
 import tourGuide.service.TripDealsService;
 import tourGuide.user.User;
 import tripPricer.Provider;
@@ -63,7 +63,7 @@ public class TripDealsControllerTest {
     @Autowired
     ObjectMapper MAPPER;
     @MockBean
-    TourGuideService tourGuideServiceMock;
+    UserServiceImpl userServiceImplMock;
     @MockBean
     TripDealsService tripDealsServiceMock;
 
@@ -78,7 +78,7 @@ public class TripDealsControllerTest {
         providers.add(provider);
         // WHEN
         when(tripDealsServiceMock.getTripDeals(Mockito.any(),Mockito.any())).thenReturn(providers);
-        when(tourGuideServiceMock.getUser(anyString())).thenReturn(validUser);
+        when(userServiceImplMock.getUser(anyString())).thenReturn(validUser);
         // THEN
         mockMvc
                 .perform(get(GET_TRIP_DEALS).param("userName", validUserName).param("attractionId",UUID.randomUUID().toString()))
@@ -107,7 +107,7 @@ public class TripDealsControllerTest {
         // GIVEN
 
         // WHEN
-        doThrow(DataNotFoundException.class).when(tourGuideServiceMock).getUser(anyString());
+        doThrow(DataNotFoundException.class).when(userServiceImplMock).getUser(anyString());
         // THEN
         mockMvc
                 .perform(get(GET_TRIP_DEALS).param("userName", "unknownUser").param("attractionId",UUID.randomUUID().toString()))

@@ -21,7 +21,7 @@ import tourGuide.model.Attraction;
 import tourGuide.model.Location;
 import tourGuide.model.UserReward;
 import tourGuide.model.VisitedLocation;
-import tourGuide.service.TourGuideService;
+import tourGuide.service.UserServiceImpl;
 import tourGuide.user.User;
 import tourGuide.user.UserPreferences;
 import tripPricer.TripPricer;
@@ -56,7 +56,8 @@ public class TripDealsIT {
   @Autowired Environment environment;
   @MockBean UserClient userClientMock;
   @SpyBean TripPricer tripPricerMock;
-  @Autowired TourGuideService tourGuideService;
+  @Autowired
+  UserServiceImpl userServiceImpl;
 
   @BeforeEach
   void setUp() {
@@ -82,7 +83,7 @@ public class TripDealsIT {
     user = new User(userId, "username1", "phone", "email");
     user.addUserReward(userReward);
     user.setUserPreferences(userPreferences);
-    tourGuideService.addUser(user);
+    userServiceImpl.addUser(user);
 
     // WHEN
 
@@ -119,7 +120,7 @@ public class TripDealsIT {
     // GIVEN i'm logged in / have NO rewards / have preferences
     user = new User(userId, "username2", "phone", "email");
     user.setUserPreferences(userPreferences);
-    tourGuideService.addUser(user);
+    userServiceImpl.addUser(user);
     // WHEN
     Mockito.when(
             tripPricerMock.getPrice(
@@ -149,7 +150,7 @@ public class TripDealsIT {
 
     // GIVEN i'm logged in / have NO rewards / have NO preferences
     user = new User(userId, "username3", "phone", "email");
-    tourGuideService.addUser(user);
+    userServiceImpl.addUser(user);
     UserPreferences defaultPreferences = new UserPreferences();
     // WHEN
     Mockito.when(
@@ -217,7 +218,7 @@ public class TripDealsIT {
 
     // GIVEN i'm logged in and don't have preferences
     user = new User(userId, "username4", "phone", "email");
-    tourGuideService.addUser(user);
+    userServiceImpl.addUser(user);
     AddUserPreferencesDto newPreferences =
         new AddUserPreferencesDto(user.getUserName(), 20, 50, 50000, 3, 2, 1, 1);
     String json = objectMapper.writeValueAsString(newPreferences);
@@ -230,7 +231,7 @@ public class TripDealsIT {
         .andExpect(status().isCreated());
     assertEquals(
         20,
-        tourGuideService.getUser(user.getUserName()).getUserPreferences().getAttractionProximity());
+        userServiceImpl.getUser(user.getUserName()).getUserPreferences().getAttractionProximity());
   }
 
   @Test
@@ -239,7 +240,7 @@ public class TripDealsIT {
     // GIVEN i'm logged in and already have preferences
     user = new User(userId, "username5", "phone", "email");
     user.setUserPreferences(userPreferences);
-    tourGuideService.addUser(user);
+    userServiceImpl.addUser(user);
     AddUserPreferencesDto newPreferences =
         new AddUserPreferencesDto(user.getUserName(), 123456, 50, 50000, 3, 2, 1, 1);
     String json = objectMapper.writeValueAsString(newPreferences);
@@ -251,7 +252,7 @@ public class TripDealsIT {
         .andExpect(status().isCreated());
     assertEquals(
         123456,
-        tourGuideService.getUser(user.getUserName()).getUserPreferences().getAttractionProximity());
+        userServiceImpl.getUser(user.getUserName()).getUserPreferences().getAttractionProximity());
   }
 
   @Test

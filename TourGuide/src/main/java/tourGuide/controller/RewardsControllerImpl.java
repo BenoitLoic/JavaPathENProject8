@@ -9,7 +9,8 @@ import org.springframework.web.bind.annotation.RestController;
 import tourGuide.exception.IllegalArgumentException;
 import tourGuide.model.UserReward;
 import tourGuide.service.RewardsService;
-import tourGuide.service.TourGuideService;
+import tourGuide.service.UserService;
+import tourGuide.service.UserServiceImpl;
 import tourGuide.user.User;
 
 import java.util.Collection;
@@ -20,7 +21,7 @@ import static tourGuide.config.Url.GET_REWARDS;
 public class RewardsControllerImpl implements RewardsController {
 
   private final Logger logger = LoggerFactory.getLogger(RewardsControllerImpl.class);
-  @Autowired private TourGuideService tourGuideService;
+  @Autowired private UserService userService;
   @Autowired private RewardsService rewardsService;
   /**
    * Get all rewards owned by the given user.username.
@@ -37,7 +38,7 @@ public class RewardsControllerImpl implements RewardsController {
       throw new IllegalArgumentException("error, username is mandatory.");
     }
 
-    User user = tourGuideService.getUser(userName);
+    User user = userService.getUser(userName);
 
     return rewardsService.getRewards(user);
   }

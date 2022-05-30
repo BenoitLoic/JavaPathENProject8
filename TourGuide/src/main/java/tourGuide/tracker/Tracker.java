@@ -1,8 +1,8 @@
 package tourGuide.tracker;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import tourGuide.service.LocationService;
 import tourGuide.service.RewardsService;
-import tourGuide.service.TourGuideService;
+import tourGuide.service.UserService;
 import tourGuide.user.User;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -14,15 +14,18 @@ import org.slf4j.LoggerFactory;
 
 public class Tracker extends Thread {
   private final Logger logger = LoggerFactory.getLogger(Tracker.class);
+  private boolean stop = false;
   private static final long trackingPollingInterval = TimeUnit.MINUTES.toSeconds(5);
   private final ExecutorService executorService = Executors.newSingleThreadExecutor();
-  private final TourGuideService tourGuideService;
-  private boolean stop = false;
+  private final LocationService locationService;
   private final RewardsService rewardsService;
+  private final UserService userService;
 
-  public Tracker(TourGuideService tourGuideService, RewardsService rewardsService) {
-    this.tourGuideService = tourGuideService;
+  public Tracker(
+      LocationService locationService, RewardsService rewardsService, UserService userService) {
+    this.locationService = locationService;
     this.rewardsService = rewardsService;
+    this.userService = userService;
     executorService.submit(this);
   }
 
@@ -41,7 +44,7 @@ public class Tracker extends Thread {
         break;
       }
 
-      List<User> users = tourGuideService.getAllUsers();
+      List<User> users = userService.getAllUsers();
 
       logger.debug("Begin Tracker. Tracking " + users.size() + " users.");
 
@@ -51,7 +54,7 @@ public class Tracker extends Thread {
           .forEach(
               user -> {
                 try {
-                  tourGuideService.trackUserLocation(user);
+                  locationService.trackUserLocation(user);
                   rewardsService.addRewardsForLastLocation(user);
                 } catch (Exception e) {
                   throw new RuntimeException(e);

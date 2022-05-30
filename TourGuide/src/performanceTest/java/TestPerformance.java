@@ -5,14 +5,13 @@ import tourGuide.Application;
 import tourGuide.client.LocationClient;
 import tourGuide.client.UserClient;
 import tourGuide.helper.InternalTestHelper;
-import tourGuide.model.Attraction;
 import tourGuide.model.Location;
 import tourGuide.model.VisitedLocation;
+import tourGuide.service.LocationService;
 import tourGuide.service.RewardsServiceImpl;
-import tourGuide.service.TourGuideService;
+import tourGuide.service.UserService;
 import tourGuide.user.User;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -36,7 +35,10 @@ public class TestPerformance {
   @Autowired LocationClient locationClient;
   @Autowired UserClient userClient;
   @Autowired RewardsServiceImpl rewardsService;
-  @Autowired TourGuideService tourGuideService;
+  @Autowired
+  LocationService locationService;
+  @Autowired
+  UserService userService;
 
   @BeforeAll
   static void beforeAll() {
@@ -74,13 +76,13 @@ public class TestPerformance {
 
     StopWatch stopWatch = new StopWatch();
     stopWatch.start();
-    CopyOnWriteArrayList<User> allUsers = tourGuideService.getAllUsers();
+    CopyOnWriteArrayList<User> allUsers = userService.getAllUsers();
 
     for (User user : allUsers) {
-      tourGuideService.trackUserLocation(user);
+      locationService.trackUserLocation(user);
     }
 
-    tourGuideService.awaitTerminationAfterShutdown();
+    locationService.awaitTerminationAfterShutdown();
 
     for (User user : allUsers) {
       assertTrue(user.getVisitedLocations().size() > 3);
@@ -107,7 +109,7 @@ public class TestPerformance {
 
     gpsUtil.location.Attraction temp = gpsUtil.getAttractions().get(0);
 
-    List<User> allUsers = tourGuideService.getAllUsers();
+    List<User> allUsers = userService.getAllUsers();
 
     allUsers.forEach(User::clearVisitedLocations);
     allUsers.forEach(

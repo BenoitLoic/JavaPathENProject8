@@ -17,7 +17,7 @@ import tourGuide.model.Location;
 import tourGuide.model.UserReward;
 import tourGuide.model.VisitedLocation;
 import tourGuide.service.RewardsServiceImpl;
-import tourGuide.service.TourGuideService;
+import tourGuide.service.UserServiceImpl;
 import tourGuide.user.User;
 
 import java.util.Arrays;
@@ -59,7 +59,7 @@ public class RewardControllerTest {
     @Autowired
     ObjectMapper MAPPER;
     @MockBean
-    TourGuideService tourGuideServiceMock;
+    UserServiceImpl userServiceImplMock;
     @MockBean
     RewardsServiceImpl rewardsServiceMock;
 
@@ -73,7 +73,7 @@ public class RewardControllerTest {
                         new UserReward(userId, visitedLocationTest, attractionTest, 5),
                         new UserReward(userId, visitedLocationTest, attractionTest, 5));
         // WHEN
-        when(tourGuideServiceMock.getUser(anyString())).thenReturn(validUser);
+        when(userServiceImplMock.getUser(anyString())).thenReturn(validUser);
         when(rewardsServiceMock.getRewards(Mockito.any())).thenReturn(userRewards);
         // THEN
         mockMvc
@@ -104,7 +104,7 @@ public class RewardControllerTest {
         // GIVEN
 
         // WHEN
-        doThrow(DataNotFoundException.class).when(tourGuideServiceMock).getUser(Mockito.anyString());
+        doThrow(DataNotFoundException.class).when(userServiceImplMock).getUser(Mockito.anyString());
         // THEN
         mockMvc
                 .perform(get(GET_REWARDS).param("userName", validUserName))
