@@ -122,12 +122,13 @@ public class TourGuideService {
    */
   public void addUser(User user) {
     if (!internalUserMap.containsKey(user.getUserName())) {
+      logger.debug("add new user:"+user.getUserName());
       internalUserMap.put(user.getUserName(), user);
     }
-
     AddNewUser newUser =
         new AddNewUser(user.getUserName(), user.getPhoneNumber(), user.getEmailAddress());
     userClient.addUser(newUser);
+
   }
 
   public void awaitTerminationAfterShutdown() {

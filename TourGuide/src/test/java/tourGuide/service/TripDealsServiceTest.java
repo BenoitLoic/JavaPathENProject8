@@ -72,7 +72,7 @@ public class TripDealsServiceTest {
         new UserReward(
             userId,
             new VisitedLocation(userId, new Location(12., 5.), new Date()),
-            new Attraction("name", "city", "state", UUID.randomUUID(), new Location(12., 5.), 10.1),
+            new Attraction("name", "city", "state", attractionId, new Location(12., 5.), 10.1),
             100);
     user.getUserRewards().add(userReward);
     // WHEN
@@ -84,7 +84,7 @@ public class TripDealsServiceTest {
 
     // THEN
     assertThat(tripDeals.size()).isEqualTo(5);
-    verify(tripPricerMock, times(1)).getPrice(null, userId, 1, 15, 5, 100);
+    verify(tripPricerMock, times(1)).getPrice(null, attractionId, 1, 15, 5, 100);
   }
 
   @Test

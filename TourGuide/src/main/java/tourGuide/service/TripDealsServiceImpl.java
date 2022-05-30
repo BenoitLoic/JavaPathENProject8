@@ -1,6 +1,8 @@
 package tourGuide.service;
 
 import org.javamoney.moneta.Money;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import tourGuide.dto.AddUserPreferencesDto;
@@ -19,6 +21,7 @@ public class TripDealsServiceImpl implements TripDealsService {
   @Value("${tripPricer.apiKey}")
   private String tripPricerApiKey;
 
+  protected final Logger logger = LoggerFactory.getLogger(TripDealsServiceImpl.class);
   private final TripPricer tripPricer;
   private final TourGuideService tourGuideService;
 
@@ -39,16 +42,15 @@ public class TripDealsServiceImpl implements TripDealsService {
     int cumulativeRewardPoints =
         user.getUserRewards().stream().mapToInt(UserReward::rewardPoints).sum();
 
-    List<Provider> providers =
-        tripPricer.getPrice(
-            tripPricerApiKey,
-            user.getUserId(),
-            user.getUserPreferences().getNumberOfAdults(),
-            user.getUserPreferences().getNumberOfChildren(),
-            user.getUserPreferences().getTripDuration(),
-            cumulativeRewardPoints);
+    logger.debug("getting trip deals for:" + user.getUserName());
 
-    return providers;
+    return tripPricer.getPrice(
+        tripPricerApiKey,
+        attractionId,
+        user.getUserPreferences().getNumberOfAdults(),
+        user.getUserPreferences().getNumberOfChildren(),
+        user.getUserPreferences().getTripDuration(),
+        cumulativeRewardPoints);
   }
 
   /**
@@ -74,6 +76,5 @@ public class TripDealsServiceImpl implements TripDealsService {
     userPreferences.setNumberOfChildren(userPreferencesDto.numberOfChildren());
 
     user.setUserPreferences(userPreferences);
-
   }
 }

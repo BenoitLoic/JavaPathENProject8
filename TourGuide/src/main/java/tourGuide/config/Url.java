@@ -4,10 +4,10 @@ package tourGuide.config;
 public class Url {
 
   public static final String INDEX = "/";
-  public static final String GETLOCATION = "/getLocation";
-  public static final String GETNEARBYATTRACTIONS = "/getNearbyAttractions";
-  public static final String GETREWARDS = "/getRewards";
-  public static final String GETALLCURRENTLOCATIONS = "/getAllCurrentLocations";
-  public static final String GETTRIPDEALS = "/getTripDeals";
-  public static final String ADDUSERPREFERENCES = "/addUserPreferences";
+  public static final String GET_LOCATION = "/getLocation";
+  public static final String GET_NEARBY_ATTRACTIONS = "/getNearbyAttractions";
+  public static final String GET_REWARDS = "/getRewards";
+  public static final String GET_ALL_CURRENT_LOCATIONS = "/getAllCurrentLocations";
+  public static final String GET_TRIP_DEALS = "/getTripDeals";
+  public static final String ADD_USER_PREFERENCES = "/addUserPreferences";
 }

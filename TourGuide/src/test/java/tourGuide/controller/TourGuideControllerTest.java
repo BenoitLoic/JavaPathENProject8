@@ -1,12 +1,7 @@
 package tourGuide.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.hamcrest.Matcher;
-import org.hamcrest.core.IsEqual;
-import org.mockito.internal.hamcrest.HamcrestArgumentMatcher;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import tourGuide.config.Url;
-import tourGuide.dto.AddUserPreferencesDto;
 import tourGuide.exception.DataNotFoundException;
 import tourGuide.exception.IllegalArgumentException;
 import tourGuide.exception.ResourceNotFoundException;
@@ -16,14 +11,12 @@ import tourGuide.model.UserReward;
 import tourGuide.model.VisitedLocation;
 import tourGuide.service.RewardsServiceImpl;
 import tourGuide.service.TourGuideService;
-import tourGuide.service.TripDealsService;
 import tourGuide.service.TripDealsServiceImpl;
 import tourGuide.user.User;
 
 import java.util.*;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -31,10 +24,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import tourGuide.user.UserPreferences;
-import tripPricer.Provider;
 
-import static org.hamcrest.EasyMock2Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
@@ -64,11 +54,10 @@ class TourGuideControllerTest {
           new Location(22d, 56d),
           null);
   @Autowired MockMvc mockMvc;
+  @Autowired ObjectMapper MAPPER;
   @MockBean TourGuideService tourGuideServiceMock;
   @MockBean RewardsServiceImpl rewardsServiceMock;
   @MockBean TripDealsServiceImpl tripDealsServiceMock;
-
-  private static final ObjectMapper MAPPER = new ObjectMapper();
 
   @Test
   void index() throws Exception {
@@ -84,7 +73,7 @@ class TourGuideControllerTest {
     when(tourGuideServiceMock.getUserLocation(Mockito.any())).thenReturn(visitedLocationTest);
     // THEN
     mockMvc
-        .perform(get(GETLOCATION).param("userName", "validUserName"))
+        .perform(get(GET_LOCATION).param("userName", "validUserName"))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON));
   }
@@ -96,7 +85,7 @@ class TourGuideControllerTest {
     // WHEN
 
     // THEN
-    mockMvc.perform(get(GETLOCATION).param("userName", "")).andExpect(status().isBadRequest());
+    mockMvc.perform(get(GET_LOCATION).param("userName", "")).andExpect(status().isBadRequest());
   }
 
   @Test
@@ -108,7 +97,7 @@ class TourGuideControllerTest {
 
     // THEN
     mockMvc
-        .perform(get(GETLOCATION).param("userName", "uknUserName"))
+        .perform(get(GET_LOCATION).param("userName", "uknUserName"))
         .andExpect(status().isNotFound());
   }
 
@@ -129,7 +118,7 @@ class TourGuideControllerTest {
     when(tourGuideServiceMock.getNearbyAttractions(Mockito.any())).thenReturn(new HashMap<>());
     // THEN
     mockMvc
-        .perform(get(GETNEARBYATTRACTIONS).param("userName", validUserName))
+        .perform(get(GET_NEARBY_ATTRACTIONS).param("userName", validUserName))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON));
   }
@@ -143,7 +132,7 @@ class TourGuideControllerTest {
 
     // THEN
     mockMvc
-        .perform(get(GETNEARBYATTRACTIONS).param("userName", ""))
+        .perform(get(GET_NEARBY_ATTRACTIONS).param("userName", ""))
         .andExpect(status().isBadRequest())
         .andExpect(
             result ->
@@ -161,7 +150,7 @@ class TourGuideControllerTest {
         .getNearbyAttractions(any());
     // THEN
     mockMvc
-        .perform(get(GETNEARBYATTRACTIONS).param("userName", validUserName))
+        .perform(get(GET_NEARBY_ATTRACTIONS).param("userName", validUserName))
         .andExpect(status().isNotFound())
         .andExpect(
             result -> assertTrue(result.getResolvedException() instanceof DataNotFoundException));
@@ -181,7 +170,7 @@ class TourGuideControllerTest {
     when(rewardsServiceMock.getRewards(Mockito.any())).thenReturn(userRewards);
     // THEN
     mockMvc
-        .perform(get(Url.GETREWARDS).param("userName", validUserName))
+        .perform(get(Url.GET_REWARDS).param("userName", validUserName))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON));
   }
@@ -195,7 +184,7 @@ class TourGuideControllerTest {
 
     // THEN
     mockMvc
-        .perform(get(Url.GETREWARDS).param("userName", ""))
+        .perform(get(Url.GET_REWARDS).param("userName", ""))
         .andExpect(status().isBadRequest())
         .andExpect(
             result ->
@@ -211,7 +200,7 @@ class TourGuideControllerTest {
     doThrow(DataNotFoundException.class).when(tourGuideServiceMock).getUser(Mockito.anyString());
     // THEN
     mockMvc
-        .perform(get(GETREWARDS).param("userName", validUserName))
+        .perform(get(GET_REWARDS).param("userName", validUserName))
         .andExpect(status().isNotFound())
         .andExpect(
             result -> assertTrue(result.getResolvedException() instanceof DataNotFoundException));
@@ -229,7 +218,7 @@ class TourGuideControllerTest {
     when(tourGuideServiceMock.getAllCurrentLocations()).thenReturn(new HashMap<>());
     // THEN
     mockMvc
-        .perform(get(GETALLCURRENTLOCATIONS))
+        .perform(get(GET_ALL_CURRENT_LOCATIONS))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON));
   }
@@ -247,7 +236,7 @@ class TourGuideControllerTest {
     when(tourGuideServiceMock.getAllCurrentLocations()).thenReturn(returnMap);
     // THEN
     mockMvc
-        .perform(get(GETALLCURRENTLOCATIONS))
+        .perform(get(GET_ALL_CURRENT_LOCATIONS))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(jsonPath("$.size()", org.hamcrest.core.IsEqual.equalTo(1)))
@@ -260,127 +249,12 @@ class TourGuideControllerTest {
     doThrow(ResourceNotFoundException.class).when(tourGuideServiceMock).getAllCurrentLocations();
 
     mockMvc
-        .perform(get(GETALLCURRENTLOCATIONS))
+        .perform(get(GET_ALL_CURRENT_LOCATIONS))
         .andExpect(status().isInternalServerError())
         .andExpect(
             result ->
                 assertTrue(result.getResolvedException() instanceof ResourceNotFoundException));
   }
 
-  @Test
-  void getTripDealsValid() throws Exception {
-    // GIVEN
-    UUID tripId = UUID.randomUUID();
-    double tripPrice = 99.5;
-    Provider provider = new Provider(tripId, "providerNameTest", tripPrice);
-    List<Provider> providers = new ArrayList<>();
-    providers.add(provider);
-    providers.add(provider);
-    // WHEN
-    when(tripDealsServiceMock.getTripDeals(Mockito.any(),Mockito.any())).thenReturn(providers);
-    when(tourGuideServiceMock.getUser(anyString())).thenReturn(validUser);
-    // THEN
-    mockMvc
-        .perform(get(GETTRIPDEALS).param("userName", validUserName).param("attractionId",UUID.randomUUID().toString()))
-        .andExpect(status().isOk())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(jsonPath("$.size()", IsEqual.equalTo(2)));
-  }
 
-  @Test
-  void getTripDealsInvalid() throws Exception {
-    // GIVEN
-
-    // WHEN
-
-    // THEN
-    mockMvc
-        .perform(get(GETTRIPDEALS).param("userName", "").param("attractionId",UUID.randomUUID().toString()))
-        .andExpect(status().isBadRequest())
-        .andExpect(
-            result ->
-                assertTrue(result.getResolvedException() instanceof IllegalArgumentException));
-  }
-
-  @Test
-  void getTripDealsWhenUserDoesntExist_ShouldThrowDataNotFoundException() throws Exception {
-    // GIVEN
-
-    // WHEN
-    doThrow(DataNotFoundException.class).when(tourGuideServiceMock).getUser(anyString());
-    // THEN
-    mockMvc
-        .perform(get(GETTRIPDEALS).param("userName", "unknownUser").param("attractionId",UUID.randomUUID().toString()))
-        .andExpect(status().isNotFound())
-        .andExpect(
-            result -> assertTrue(result.getResolvedException() instanceof DataNotFoundException));
-  }
-
-  @Test
-  void addUserPreferencesValid() throws Exception {
-
-    // GIVEN
-    String username = "usernameTest";
-
-    //    AddUserPreferencesDto( int attractionProximity, int lowerPricePoint, int highPricePoint,
-    // int tripDuration, int ticketQuantity, int numberOfAdults, int numberOfChildren)
-
-    AddUserPreferencesDto validUserPreferences =
-        new AddUserPreferencesDto(username, 0, 0, 0, 0, 0, 0, 0);
-    String jsonBody = MAPPER.writeValueAsString(validUserPreferences);
-    System.out.println(jsonBody);
-    // WHEN
-    Mockito.doNothing().when(tripDealsServiceMock).addUserPreferences(Mockito.any());
-    // THEN
-    mockMvc
-        .perform(
-            post(ADDUSERPREFERENCES)
-                .content(jsonBody)
-                .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isCreated());
-    verify(tripDealsServiceMock, times(1)).addUserPreferences(validUserPreferences);
-  }
-  @Test
-  void addUserPreferencesInvalid() throws Exception {
-
-    // GIVEN
-    String username = "";
-
-    //    AddUserPreferencesDto( int attractionProximity, int lowerPricePoint, int highPricePoint,
-    // int tripDuration, int ticketQuantity, int numberOfAdults, int numberOfChildren)
-
-    AddUserPreferencesDto validUserPreferences =
-            new AddUserPreferencesDto(username, 0, 0, 0, 0, 0, 0, 0);
-    String jsonBody = MAPPER.writeValueAsString(validUserPreferences);
-    // WHEN
-
-    // THEN
-    mockMvc
-            .perform(
-                    post(ADDUSERPREFERENCES)
-                            .content(jsonBody)
-                            .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isBadRequest())
-            .andExpect(result -> assertTrue(result.getResolvedException() instanceof MethodArgumentNotValidException));
-  }
-
-  @Test
-  void addUserPreferencesWhenUserDoesntExist_ShouldThrowDataNotFoundException() throws Exception {
-
-    // GIVEN
-    String uknUserUsername = "ukn";
-    AddUserPreferencesDto validUserPreferences =
-            new AddUserPreferencesDto(uknUserUsername, 0, 0, 0, 0, 0, 0, 0);
-    String jsonBody = MAPPER.writeValueAsString(validUserPreferences);
-    // WHEN
-    doThrow(DataNotFoundException.class).when(tripDealsServiceMock).addUserPreferences(Mockito.any());
-    // THEN
-    mockMvc
-            .perform(
-                    post(ADDUSERPREFERENCES)
-                            .content(jsonBody)
-                            .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isNotFound())
-            .andExpect(result -> assertTrue(result.getResolvedException() instanceof DataNotFoundException));
-  }
 }

@@ -2,7 +2,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
 import org.hamcrest.core.IsEqual;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,9 +9,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import tourGuide.Application;
@@ -50,7 +46,6 @@ public class TourGuideIT {
 
   @BeforeEach
   void setUp() {
-
     visitedLocationTest = new VisitedLocation(userId, new Location(50.54, 20.), dateTest);
   }
 
@@ -63,7 +58,7 @@ public class TourGuideIT {
     when(locationClientMock.getLocation(Mockito.any())).thenReturn(visitedLocationTest);
     // THEN
     mockMvc
-        .perform(get(Url.GETLOCATION).param("userName", userName))
+        .perform(get(Url.GET_LOCATION).param("userName", userName))
         .andExpect(MockMvcResultMatchers.status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(jsonPath("$.latitude", is(20.0)))
@@ -73,7 +68,7 @@ public class TourGuideIT {
   @Test
   void getLocationInvalid() throws Exception {
     mockMvc
-        .perform(get(Url.GETLOCATION).param("userName", ""))
+        .perform(get(Url.GET_LOCATION).param("userName", ""))
         .andExpect(status().isBadRequest())
         .andExpect(
             result ->
@@ -85,7 +80,7 @@ public class TourGuideIT {
   void getLocationWhenUserDoesntExist_ShouldThrowDataNotFoundException() throws Exception {
 
     mockMvc
-        .perform(get(Url.GETLOCATION).param("userName", "UNKNOWN_USER"))
+        .perform(get(Url.GET_LOCATION).param("userName", "UNKNOWN_USER"))
         .andExpect(status().isNotFound())
         .andExpect(
             result ->
@@ -113,7 +108,7 @@ public class TourGuideIT {
     when(locationClientMock.getAllLastLocation()).thenReturn(uuidLocationMap);
     // THEN
     mockMvc
-        .perform(get(Url.GETALLCURRENTLOCATIONS))
+        .perform(get(Url.GET_ALL_CURRENT_LOCATIONS))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(jsonPath("$.size()", IsEqual.equalTo(5)))
@@ -127,7 +122,7 @@ public class TourGuideIT {
     when(locationClientMock.getAllLastLocation()).thenThrow(FeignException.class);
     // THEN
     mockMvc
-        .perform(get(Url.GETALLCURRENTLOCATIONS))
+        .perform(get(Url.GET_ALL_CURRENT_LOCATIONS))
         .andExpect(status().isInternalServerError())
         .andExpect(
             result ->
