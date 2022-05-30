@@ -1,7 +1,10 @@
 package tourGuide.service;
 
-import feign.FeignException;
-import org.junit.jupiter.api.Assertions;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -10,20 +13,11 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import tourGuide.client.RewardClient;
 import tourGuide.dto.GetNearbyAttractionDto;
-import tourGuide.exception.ResourceNotFoundException;
 import tourGuide.model.Attraction;
 import tourGuide.model.Location;
 import tourGuide.model.UserReward;
 import tourGuide.model.VisitedLocation;
 import tourGuide.user.User;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.*;
 
@@ -162,21 +156,23 @@ class RewardsServiceTest {
     userMock.addToVisitedLocations(visitedLocationTest);
     userMock.addToVisitedLocations(visitedLocationTest);
     Attraction attractionTest2 =
-            new Attraction(
-                    "attractionNameTest",
-                    "attractionCityTest",
-                    "attractionStateTest",
-                    UUID.randomUUID(),
-                    new Location(22d, 56d),
-                    null);
+        new Attraction(
+            "attractionNameTest",
+            "attractionCityTest",
+            "attractionStateTest",
+            UUID.randomUUID(),
+            new Location(22d, 56d),
+            null);
     Collection<UserReward> expected = new ArrayList<>();
     expected.add(new UserReward(userId, visitedLocationTest, attractionTest, 50));
     expected.add(new UserReward(userId, visitedLocationTest, attractionTest2, 50));
 
-
     // WHEN
     when(rewardClientMock.addUserReward(Mockito.any(), Mockito.any()))
-        .thenReturn(new UserReward(userId, visitedLocationTest, attractionTest, 50),new UserReward(userId, visitedLocationTest, attractionTest, 50),new UserReward(userId, visitedLocationTest, attractionTest2, 50));
+        .thenReturn(
+            new UserReward(userId, visitedLocationTest, attractionTest, 50),
+            new UserReward(userId, visitedLocationTest, attractionTest, 50),
+            new UserReward(userId, visitedLocationTest, attractionTest2, 50));
     // THEN
     rewardsService.addRewards(userMock);
 
@@ -190,7 +186,7 @@ class RewardsServiceTest {
   }
 
   @Test
-  void getRewards_ShouldReturn2Rewards(){
+  void getRewards_ShouldReturn2Rewards() {
 
     // GIVEN
     User userMock = new User(userId, "userNameTest", "phoneTest", "emailTest");
@@ -200,12 +196,10 @@ class RewardsServiceTest {
     Collection<UserReward> rewards = rewardsService.getRewards(userMock);
     // THEN
     assertThat(rewards.size()).isEqualTo(2);
-
-
   }
 
   @Test
-  void getRewards_ShouldReturnEmptyList(){
+  void getRewards_ShouldReturnEmptyList() {
 
     // GIVEN
     User userMock = new User(userId, "userNameTest", "phoneTest", "emailTest");
@@ -213,6 +207,5 @@ class RewardsServiceTest {
     Collection<UserReward> rewards = rewardsService.getRewards(userMock);
     // THEN
     assertThat(rewards.isEmpty()).isTrue();
-
   }
 }

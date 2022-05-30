@@ -1,4 +1,6 @@
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Date;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -25,10 +27,6 @@ import tourGuide.service.UserServiceImpl;
 import tourGuide.user.User;
 import tourGuide.user.UserPreferences;
 import tripPricer.TripPricer;
-
-import java.util.Date;
-import java.util.UUID;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -46,22 +44,22 @@ public class TripDealsIT {
   private final UUID attractionId = UUID.randomUUID();
   private final UUID userId = UUID.randomUUID();
   private final Date dateTest = new Date();
-  private User user;
   private final VisitedLocation visitedLocationTest =
       new VisitedLocation(userId, new Location(50.54, 20.), dateTest);
-  private UserReward userReward;
-  private UserPreferences userPreferences;
   @Autowired MockMvc mockMvc;
   @Autowired ObjectMapper objectMapper;
   @Autowired Environment environment;
   @MockBean UserClient userClientMock;
   @SpyBean TripPricer tripPricerMock;
-  @Autowired
-  UserServiceImpl userServiceImpl;
+  @Autowired UserServiceImpl userServiceImpl;
+  private User user;
+  private UserReward userReward;
+  private UserPreferences userPreferences;
 
   @BeforeEach
   void setUp() {
-    Attraction attraction = new Attraction(
+    Attraction attraction =
+        new Attraction(
             "attractionName",
             "cityTest",
             "state",
@@ -227,7 +225,8 @@ public class TripDealsIT {
 
     // THEN my preferences should be added
     mockMvc
-        .perform(post(Url.ADD_USER_PREFERENCES).content(json).contentType(MediaType.APPLICATION_JSON))
+        .perform(
+            post(Url.ADD_USER_PREFERENCES).content(json).contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated());
     assertEquals(
         20,
@@ -248,7 +247,8 @@ public class TripDealsIT {
 
     // THEN my preferences should be updated
     mockMvc
-        .perform(post(Url.ADD_USER_PREFERENCES).content(json).contentType(MediaType.APPLICATION_JSON))
+        .perform(
+            post(Url.ADD_USER_PREFERENCES).content(json).contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated());
     assertEquals(
         123456,
@@ -266,7 +266,8 @@ public class TripDealsIT {
 
     // THEN i get an error
     mockMvc
-        .perform(post(Url.ADD_USER_PREFERENCES).content(json).contentType(MediaType.APPLICATION_JSON))
+        .perform(
+            post(Url.ADD_USER_PREFERENCES).content(json).contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isNotFound())
         .andExpect(
             result -> assertTrue(result.getResolvedException() instanceof DataNotFoundException));
@@ -276,16 +277,17 @@ public class TripDealsIT {
   void addUserPreferences_Invalid_ShouldThrowIllegalArgumentException() throws Exception {
 
     // GIVEN i don't give a valid username
-    AddUserPreferencesDto newPreferences =
-            new AddUserPreferencesDto("", 50, 50, 50000, 3, 2, 1, 1);
+    AddUserPreferencesDto newPreferences = new AddUserPreferencesDto("", 50, 50, 50000, 3, 2, 1, 1);
     String json = objectMapper.writeValueAsString(newPreferences);
     // WHEN i add a new preferences
 
     // THEN i get an error
     mockMvc
-            .perform(post(Url.ADD_USER_PREFERENCES).content(json).contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isBadRequest())
-            .andExpect(
-                    result -> assertTrue(result.getResolvedException() instanceof IllegalArgumentException));
+        .perform(
+            post(Url.ADD_USER_PREFERENCES).content(json).contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest())
+        .andExpect(
+            result ->
+                assertTrue(result.getResolvedException() instanceof IllegalArgumentException));
   }
 }

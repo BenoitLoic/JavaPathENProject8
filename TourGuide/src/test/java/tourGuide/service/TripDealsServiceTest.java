@@ -1,5 +1,8 @@
 package tourGuide.service;
 
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 import org.javamoney.moneta.Money;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,11 +20,6 @@ import tourGuide.user.UserPreferences;
 import tripPricer.Provider;
 import tripPricer.TripPricer;
 import tripPricer.TripPricerTask;
-
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
-
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.*;
 
@@ -34,8 +32,7 @@ public class TripDealsServiceTest {
   private final String phoneNumber = "phoneTest";
   private final String email = "emailTest";
 
-  @Mock
-  UserServiceImpl userServiceImplMock;
+  @Mock UserServiceImpl userServiceImplMock;
   @Mock TripPricerTask tripPricerTaskMock;
   @Spy TripPricer tripPricerMock;
 
@@ -52,7 +49,7 @@ public class TripDealsServiceTest {
         .doCallRealMethod()
         .when(tripPricerMock)
         .getPrice(anyString(), any(UUID.class), anyInt(), anyInt(), anyInt(), anyInt());
-    List<Provider> tripDeals = tripDealsService.getTripDeals(user,UUID.randomUUID());
+    List<Provider> tripDeals = tripDealsService.getTripDeals(user, UUID.randomUUID());
 
     // THEN
     assertThat(tripDeals.size()).isEqualTo(5);
@@ -73,13 +70,13 @@ public class TripDealsServiceTest {
             new VisitedLocation(userId, new Location(12., 5.), new Date()),
             new Attraction("name", "city", "state", attractionId, new Location(12., 5.), 10.1),
             100);
-    user.getUserRewards().add(userReward);
+    user.addUserReward(userReward);
     // WHEN
     lenient()
         .doCallRealMethod()
         .when(tripPricerMock)
         .getPrice(anyString(), any(UUID.class), anyInt(), anyInt(), anyInt(), anyInt());
-    List<Provider> tripDeals = tripDealsService.getTripDeals(user,attractionId);
+    List<Provider> tripDeals = tripDealsService.getTripDeals(user, attractionId);
 
     // THEN
     assertThat(tripDeals.size()).isEqualTo(5);

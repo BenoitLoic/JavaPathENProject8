@@ -1,6 +1,18 @@
 import gpsUtil.GpsUtil;
-import org.junit.jupiter.api.*;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
+import org.apache.commons.lang3.time.StopWatch;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import tourGuide.Application;
 import tourGuide.client.LocationClient;
 import tourGuide.client.UserClient;
@@ -11,19 +23,6 @@ import tourGuide.service.LocationService;
 import tourGuide.service.RewardsServiceImpl;
 import tourGuide.service.UserService;
 import tourGuide.user.User;
-
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.lang3.time.StopWatch;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest(classes = Application.class)
@@ -35,10 +34,8 @@ public class TestPerformance {
   @Autowired LocationClient locationClient;
   @Autowired UserClient userClient;
   @Autowired RewardsServiceImpl rewardsService;
-  @Autowired
-  LocationService locationService;
-  @Autowired
-  UserService userService;
+  @Autowired LocationService locationService;
+  @Autowired UserService userService;
 
   @BeforeAll
   static void beforeAll() {
@@ -77,7 +74,7 @@ public class TestPerformance {
     StopWatch stopWatch = new StopWatch();
     stopWatch.start();
     CopyOnWriteArrayList<User> allUsers = userService.getAllUsers();
-
+    System.out.println(allUsers.size());
     for (User user : allUsers) {
       locationService.trackUserLocation(user);
     }

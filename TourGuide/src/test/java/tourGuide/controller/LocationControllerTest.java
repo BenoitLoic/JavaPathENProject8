@@ -1,6 +1,18 @@
 package tourGuide.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
 import tourGuide.exception.DataNotFoundException;
 import tourGuide.exception.IllegalArgumentException;
 import tourGuide.exception.ResourceNotFoundException;
@@ -11,23 +23,10 @@ import tourGuide.service.LocationServiceImpl;
 import tourGuide.service.RewardsServiceImpl;
 import tourGuide.service.UserService;
 import tourGuide.user.User;
-
-import java.util.*;
-
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static tourGuide.config.Url.*;
 
@@ -35,8 +34,8 @@ import static tourGuide.config.Url.*;
 @AutoConfigureMockMvc
 class LocationControllerTest {
 
-  private final UUID userId = UUID.randomUUID();
   private static final String validUserName = "userName";
+  private final UUID userId = UUID.randomUUID();
   private final Date date = new Date();
   private final VisitedLocation visitedLocationTest =
       new VisitedLocation(UUID.randomUUID(), new Location(56d, 22d), date);
@@ -53,12 +52,9 @@ class LocationControllerTest {
           null);
   @Autowired MockMvc mockMvc;
   @Autowired ObjectMapper MAPPER;
-  @MockBean
-  LocationServiceImpl locationServiceMock;
+  @MockBean LocationServiceImpl locationServiceMock;
   @MockBean RewardsServiceImpl rewardsServiceMock;
-  @MockBean
-  UserService userServiceMock;
-
+  @MockBean UserService userServiceMock;
 
   @Test
   void getLocationValid() throws Exception {
@@ -152,8 +148,6 @@ class LocationControllerTest {
             result -> assertTrue(result.getResolvedException() instanceof DataNotFoundException));
   }
 
-
-
   // doit retourner toutes la derniere position connue pour tout les utilisateurs.
   // cette position doit etre récupéré dans les données sauvegardés de l'utilisateur.
   // la réponse est en JSON avec un mapping -> userId : position
@@ -203,6 +197,4 @@ class LocationControllerTest {
             result ->
                 assertTrue(result.getResolvedException() instanceof ResourceNotFoundException));
   }
-
-
 }

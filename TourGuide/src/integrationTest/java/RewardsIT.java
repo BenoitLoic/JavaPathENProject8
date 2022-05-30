@@ -1,4 +1,7 @@
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,11 +24,6 @@ import tourGuide.model.UserReward;
 import tourGuide.model.VisitedLocation;
 import tourGuide.service.UserServiceImpl;
 import tourGuide.user.User;
-
-import java.util.Arrays;
-import java.util.Date;
-import java.util.UUID;
-
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -40,20 +38,20 @@ public class RewardsIT {
   private final UUID attractionId = UUID.randomUUID();
   private final UUID userId = UUID.randomUUID();
   private final Date dateTest = new Date();
-  private User user;
   private final VisitedLocation visitedLocationTest =
-          new VisitedLocation(userId, new Location(50.54, 20.), dateTest);
-  private UserReward userReward;
+      new VisitedLocation(userId, new Location(50.54, 20.), dateTest);
   @Autowired MockMvc mockMvc;
   @Autowired ObjectMapper objectMapper;
   @MockBean RewardClient rewardClientMock;
-  @Autowired
-  UserServiceImpl tourGuideService;
+  @Autowired UserServiceImpl tourGuideService;
+  private User user;
+  private UserReward userReward;
 
   @BeforeEach
   void setUp() {
     user = new User(userId, "username", "phone", "email");
-    Attraction attraction = new Attraction(
+    Attraction attraction =
+        new Attraction(
             "attractionName",
             "cityTest",
             "state",
@@ -72,15 +70,16 @@ public class RewardsIT {
     // WHEN
 
     // THEN i get my rewards
-    MvcResult result = mockMvc
-            .perform(get(Url.GET_REWARDS)
-                    .param("userName", "username"))
+    MvcResult result =
+        mockMvc
+            .perform(get(Url.GET_REWARDS).param("userName", "username"))
             .andDo(print())
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andReturn();
 
-    UserReward[] userRewards = objectMapper.readValue(result.getResponse().getContentAsString(), UserReward[].class);
+    UserReward[] userRewards =
+        objectMapper.readValue(result.getResponse().getContentAsString(), UserReward[].class);
     UserReward resultReward = Arrays.stream(userRewards).findFirst().get();
     assertThat(userReward).isEqualTo(resultReward);
     InternalTestRepository.getInternalUserMap().remove(user.getUserName());
@@ -95,15 +94,16 @@ public class RewardsIT {
     // WHEN
 
     // THEN i get an empty list
-    MvcResult result = mockMvc
-            .perform(get(Url.GET_REWARDS)
-                    .param("userName", "username"))
+    MvcResult result =
+        mockMvc
+            .perform(get(Url.GET_REWARDS).param("userName", "username"))
             .andDo(print())
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andReturn();
 
-    UserReward[] userRewards = objectMapper.readValue(result.getResponse().getContentAsString(), UserReward[].class);
+    UserReward[] userRewards =
+        objectMapper.readValue(result.getResponse().getContentAsString(), UserReward[].class);
     assertThat(userRewards).isEmpty();
     InternalTestRepository.getInternalUserMap().remove(user.getUserName());
   }
@@ -117,10 +117,12 @@ public class RewardsIT {
 
     // THEN i get an error
     mockMvc
-            .perform(get(Url.GET_REWARDS)
-                    .param("userName", ""))
-            .andExpect(status().isBadRequest())
-            .andExpect(result -> assertThat(result.getResolvedException() instanceof IllegalArgumentException).isTrue());
+        .perform(get(Url.GET_REWARDS).param("userName", ""))
+        .andExpect(status().isBadRequest())
+        .andExpect(
+            result ->
+                assertThat(result.getResolvedException() instanceof IllegalArgumentException)
+                    .isTrue());
   }
 
   @Test
@@ -132,9 +134,11 @@ public class RewardsIT {
 
     // THEN i get an error
     mockMvc
-            .perform(get(Url.GET_REWARDS)
-                    .param("userName", "Remi sans compte"))
-            .andExpect(status().isNotFound())
-            .andExpect(result -> assertThat(result.getResolvedException() instanceof DataNotFoundException).isTrue());
+        .perform(get(Url.GET_REWARDS).param("userName", "Remi sans compte"))
+        .andExpect(status().isNotFound())
+        .andExpect(
+            result ->
+                assertThat(result.getResolvedException() instanceof DataNotFoundException)
+                    .isTrue());
   }
 }

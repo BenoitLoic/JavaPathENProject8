@@ -5,19 +5,18 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
-
 import tourGuide.model.UserReward;
 import tourGuide.model.VisitedLocation;
 import tripPricer.Provider;
 
 public class User {
+  private final List<VisitedLocation> visitedLocations = new CopyOnWriteArrayList<>();
+  private final List<UserReward> userRewards = new ArrayList<>();
   private UUID userId;
   private String userName;
   private String phoneNumber;
   private String emailAddress;
   private Date latestLocationTimestamp;
-  private final List<VisitedLocation> visitedLocations = new CopyOnWriteArrayList<>();
-  private final List<UserReward> userRewards = new ArrayList<>();
   private UserPreferences userPreferences = new UserPreferences();
   private List<Provider> tripDeals = new ArrayList<>();
 
@@ -38,28 +37,32 @@ public class User {
     return userName;
   }
 
-  public void setPhoneNumber(String phoneNumber) {
-    this.phoneNumber = phoneNumber;
-  }
-
   public String getPhoneNumber() {
     return phoneNumber;
   }
 
-  public void setEmailAddress(String emailAddress) {
-    this.emailAddress = emailAddress;
+  public void setPhoneNumber(String phoneNumber) {
+    this.phoneNumber = phoneNumber;
   }
 
   public String getEmailAddress() {
     return emailAddress;
   }
 
-  public void setLatestLocationTimestamp(Date latestLocationTimestamp) {
-    this.latestLocationTimestamp = latestLocationTimestamp;
+  public void setEmailAddress(String emailAddress) {
+    this.emailAddress = emailAddress;
   }
 
   public Date getLatestLocationTimestamp() {
-    return latestLocationTimestamp;
+
+    if (latestLocationTimestamp != null) {
+      return new Date(latestLocationTimestamp.getTime());
+    }
+    return null;
+  }
+
+  public void setLatestLocationTimestamp(Date latestLocationTimestamp) {
+    this.latestLocationTimestamp = new Date(latestLocationTimestamp.getTime());
   }
 
   public void addToVisitedLocations(VisitedLocation visitedLocation) {
@@ -74,35 +77,32 @@ public class User {
     visitedLocations.clear();
   }
 
-
   public void addUserReward(UserReward userReward) {
-
-      userRewards.add(userReward);
-
+    userRewards.add(userReward);
   }
 
   public List<UserReward> getUserRewards() {
-    return userRewards;
+    return new ArrayList<>(userRewards);
   }
 
   public UserPreferences getUserPreferences() {
-    return userPreferences;
+    return new UserPreferences(userPreferences);
   }
 
   public void setUserPreferences(UserPreferences userPreferences) {
-    this.userPreferences = userPreferences;
+    this.userPreferences = new UserPreferences(userPreferences);
   }
 
   public VisitedLocation getLastVisitedLocation() {
     return visitedLocations.get(visitedLocations.size() - 1);
   }
 
-  public void setTripDeals(List<Provider> tripDeals) {
-    this.tripDeals = tripDeals;
+  public List<Provider> getTripDeals() {
+    return new ArrayList<>(tripDeals);
   }
 
-  public List<Provider> getTripDeals() {
-    return tripDeals;
+  public void setTripDeals(List<Provider> tripDeals) {
+    this.tripDeals = new ArrayList<>(tripDeals);
   }
 
   @Override

@@ -13,5 +13,4 @@ public class Application {
     Locale.setDefault(Locale.US);
     SpringApplication.run(Application.class, args);
   }
-
 }

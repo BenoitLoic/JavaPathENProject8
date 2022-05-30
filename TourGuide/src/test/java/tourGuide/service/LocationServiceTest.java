@@ -1,18 +1,8 @@
 package tourGuide.service;
 
 import feign.FeignException;
-import tourGuide.client.LocationClient;
-import tourGuide.dto.GetNearbyAttractionDto;
-import tourGuide.exception.DataNotFoundException;
-import tourGuide.exception.ResourceNotFoundException;
-import tourGuide.model.Attraction;
-import tourGuide.model.Location;
-import tourGuide.model.VisitedLocation;
-import tourGuide.user.User;
-
 import java.util.*;
 import java.util.stream.IntStream;
-
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,27 +11,30 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-
+import tourGuide.client.LocationClient;
+import tourGuide.dto.GetNearbyAttractionDto;
+import tourGuide.exception.DataNotFoundException;
+import tourGuide.exception.ResourceNotFoundException;
+import tourGuide.model.Attraction;
+import tourGuide.model.Location;
+import tourGuide.model.VisitedLocation;
+import tourGuide.user.User;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class LocationServiceTest {
 
   private final UUID userId = UUID.randomUUID();
-  private VisitedLocation visitedLocationTest;
-  private User userTest;
   @Mock LocationClient locationClientMock;
   @Mock UserService userServiceMock;
   @Mock RewardsServiceImpl rewardsServiceMock;
   @InjectMocks LocationServiceImpl locationService;
+  private VisitedLocation visitedLocationTest;
+  private User userTest;
 
   @BeforeEach
   void setUp() {
@@ -194,8 +187,8 @@ class LocationServiceTest {
     locationService.awaitTerminationAfterShutdown();
     // THEN
     for (User user : users) {
-        assertThat(user.getVisitedLocations().size()).isEqualTo(1);
+      assertThat(user.getVisitedLocations().size()).isEqualTo(1);
     }
-    verify(locationClientMock,times(20)).getLocation(any(UUID.class));
+    verify(locationClientMock, times(20)).getLocation(any(UUID.class));
   }
 }

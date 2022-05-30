@@ -1,21 +1,19 @@
 package tourGuide.service;
 
+import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import tourGuide.client.UserClient;
 import tourGuide.dto.AddNewUser;
 import tourGuide.exception.DataNotFoundException;
 import tourGuide.helper.InternalTestRepository;
 import tourGuide.user.User;
 
-import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-
 @Service
-public class UserServiceImpl implements UserService{
+public class UserServiceImpl implements UserService {
   protected final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
   private final Map<String, User> internalUserMap;
 
@@ -26,7 +24,7 @@ public class UserServiceImpl implements UserService{
     this.userClient = userClient;
     logger.debug("Initializing users");
     internalUserMap = InternalTestRepository.getInternalUserMap();
-    logger.error("Finished initializing "+internalUserMap.size()+" users");
+    logger.error("Finished initializing " + internalUserMap.size() + " users");
   }
 
   /**

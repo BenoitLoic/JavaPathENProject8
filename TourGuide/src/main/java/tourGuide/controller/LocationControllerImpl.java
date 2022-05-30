@@ -1,5 +1,8 @@
 package tourGuide.controller;
 
+import java.util.Collection;
+import java.util.Map;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,13 +15,9 @@ import tourGuide.model.Location;
 import tourGuide.service.LocationService;
 import tourGuide.service.UserService;
 import tourGuide.user.User;
-
-import java.util.Collection;
-import java.util.Map;
-import java.util.UUID;
-
 import static tourGuide.config.Url.*;
 
+/** Rest Controller for Location features. */
 @RestController
 public class LocationControllerImpl implements LocationController {
 

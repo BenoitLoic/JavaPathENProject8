@@ -2,6 +2,9 @@ package old;
 
 import gpsUtil.GpsUtil;
 import gpsUtil.location.Attraction;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,14 +21,8 @@ import tourGuide.model.VisitedLocation;
 import tourGuide.service.RewardsServiceImpl;
 import tourGuide.service.UserServiceImpl;
 import tourGuide.user.User;
-
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Disabled
 @SpringBootTest(classes = Application.class)
 @ActiveProfiles("test")
 public class TestRewardsService {
@@ -58,11 +55,10 @@ public class TestRewardsService {
 
   //  @Disabled("Needs fixed - can throw ConcurrentModificationException")
   @Test
-  public void nearAllAttractions()  {
+  public void nearAllAttractions() {
     GpsUtil gpsUtil = new GpsUtil();
     RewardsServiceImpl rewardsService = new RewardsServiceImpl(rewardClient);
-    UserServiceImpl userServiceImpl =
-        new UserServiceImpl(userClient);
+    UserServiceImpl userServiceImpl = new UserServiceImpl(userClient);
     User user = userServiceImpl.getAllUsers().get(0);
     // clear visited location to avoid duplicate during test
     // (attractionId from gpsUtil and locationClient.gpsUtil are different)

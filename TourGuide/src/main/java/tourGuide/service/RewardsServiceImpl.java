@@ -1,7 +1,13 @@
 package tourGuide.service;
 
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tourGuide.client.RewardClient;
 import tourGuide.dto.GetNearbyAttractionDto;
@@ -11,15 +17,7 @@ import tourGuide.model.UserReward;
 import tourGuide.model.VisitedLocation;
 import tourGuide.user.User;
 
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
-/**
- * Reward service implementation.
- */
+/** Reward service implementation. */
 @Service
 public class RewardsServiceImpl implements RewardsService {
 
@@ -27,6 +25,7 @@ public class RewardsServiceImpl implements RewardsService {
   private final ExecutorService threadPool = Executors.newFixedThreadPool(200);
   private final RewardClient rewardClient;
 
+  @Autowired
   public RewardsServiceImpl(RewardClient rewardClient) {
     this.rewardClient = rewardClient;
   }
@@ -86,7 +85,7 @@ public class RewardsServiceImpl implements RewardsService {
                 userReward -> {
                   synchronized (attractionIds) {
                     if (!attractionIds.contains(userReward.attraction().attractionId())) {
-                      userRewards.add(userReward);
+                      user.addUserReward(userReward);
                       attractionIds.add(userReward.attraction().attractionId());
                     }
                   }
@@ -97,6 +96,12 @@ public class RewardsServiceImpl implements RewardsService {
       }
     }
   }
+
+  /**
+   * Check if there is a reward for the last visitedLocation.
+   *
+   * @param user the user
+   */
   @Override
   public void addRewardsForLastLocation(User user) {
 
@@ -105,19 +110,18 @@ public class RewardsServiceImpl implements RewardsService {
     List<UUID> attractionIds = Collections.synchronizedList(new ArrayList<>());
     userRewards.forEach(ur -> attractionIds.add(ur.attraction().attractionId()));
 
-        CompletableFuture.supplyAsync(
-                        () -> rewardClient.addUserReward(user.getUserId(), user.getLastVisitedLocation()), threadPool)
-                .thenAccept(
-                        userReward -> {
-                          synchronized (attractionIds) {
-                            if (!attractionIds.contains(userReward.attraction().attractionId())) {
-                              userRewards.add(userReward);
-                              attractionIds.add(userReward.attraction().attractionId());
-                            }
-                          }
-                        });
-
-
+    CompletableFuture.supplyAsync(
+            () -> rewardClient.addUserReward(user.getUserId(), user.getLastVisitedLocation()),
+            threadPool)
+        .thenAccept(
+            userReward -> {
+              synchronized (attractionIds) {
+                if (!attractionIds.contains(userReward.attraction().attractionId())) {
+                  user.addUserReward(userReward);
+                  attractionIds.add(userReward.attraction().attractionId());
+                }
+              }
+            });
   }
 
   /**

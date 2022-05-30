@@ -1,12 +1,10 @@
 package tourGuide.controller;
 
-import org.springframework.web.bind.annotation.RequestParam;
-import tourGuide.dto.GetNearbyAttractionDto;
-import tourGuide.model.Location;
-
 import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
+import tourGuide.dto.GetNearbyAttractionDto;
+import tourGuide.model.Location;
 
 /** Rest Controller for Location features. */
 public interface LocationController {

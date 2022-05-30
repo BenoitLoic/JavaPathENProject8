@@ -1,5 +1,6 @@
 package tourGuide.controller;
 
+import java.util.Collection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,11 +11,7 @@ import tourGuide.exception.IllegalArgumentException;
 import tourGuide.model.UserReward;
 import tourGuide.service.RewardsService;
 import tourGuide.service.UserService;
-import tourGuide.service.UserServiceImpl;
 import tourGuide.user.User;
-
-import java.util.Collection;
-
 import static tourGuide.config.Url.GET_REWARDS;
 
 @RestController

@@ -1,12 +1,11 @@
 package tourGuide.service;
 
+import java.util.Collection;
+import java.util.UUID;
 import tourGuide.dto.GetNearbyAttractionDto;
 import tourGuide.model.Attraction;
 import tourGuide.model.UserReward;
 import tourGuide.user.User;
-
-import java.util.Collection;
-import java.util.UUID;
 
 /** Reward service interface. */
 public interface RewardsService {
@@ -21,6 +20,11 @@ public interface RewardsService {
   Collection<GetNearbyAttractionDto> calculateRewardsPoints(
       Collection<Attraction> attractionCollection, UUID userId);
 
+  /**
+   * Check if there is a reward for the last visitedLocation.
+   *
+   * @param user the user
+   */
   void addRewardsForLastLocation(User user);
 
   /**

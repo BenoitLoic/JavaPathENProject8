@@ -1,15 +1,12 @@
 package tourGuide.dto;
 
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.Objects;
 import java.util.UUID;
 
-
 public class GetNearbyAttractionDto {
   private String attractionName;
-  @JsonIgnore
-  private String city;
+  @JsonIgnore private String city;
   @JsonIgnore private String state;
   @JsonIgnore() private UUID attractionId;
   private Double latitude;

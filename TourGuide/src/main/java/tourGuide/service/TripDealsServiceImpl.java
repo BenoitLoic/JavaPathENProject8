@@ -1,5 +1,7 @@
 package tourGuide.service;
 
+import java.util.List;
+import java.util.UUID;
 import org.javamoney.moneta.Money;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,18 +14,14 @@ import tourGuide.user.UserPreferences;
 import tripPricer.Provider;
 import tripPricer.TripPricer;
 
-import java.util.List;
-import java.util.UUID;
-
 @Service
 public class TripDealsServiceImpl implements TripDealsService {
-
-  @Value("${tripPricer.apiKey}")
-  private String tripPricerApiKey;
 
   protected final Logger logger = LoggerFactory.getLogger(TripDealsServiceImpl.class);
   private final TripPricer tripPricer;
   private final UserService userService;
+  @Value("${tripPricer.apiKey}")
+  private String tripPricerApiKey;
 
   public TripDealsServiceImpl(TripPricer tripPricer, UserService userService) {
     this.tripPricer = tripPricer;

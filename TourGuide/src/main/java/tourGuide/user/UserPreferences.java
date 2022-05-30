@@ -1,20 +1,14 @@
 package tourGuide.user;
 
+import java.util.Objects;
 import javax.money.CurrencyUnit;
 import javax.money.Monetary;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonIncludeProperties;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.javamoney.moneta.Money;
-
-import java.util.Objects;
 
 public class UserPreferences {
 
-  private int attractionProximity = Integer.MAX_VALUE;
   private final CurrencyUnit currency = Monetary.getCurrency("USD");
+  private int attractionProximity = Integer.MAX_VALUE;
   private Money lowerPricePoint = Money.of(0, currency);
   private Money highPricePoint = Money.of(Integer.MAX_VALUE, currency);
   private int tripDuration = 1;
@@ -24,16 +18,43 @@ public class UserPreferences {
 
   public UserPreferences() {}
 
+  public UserPreferences(UserPreferences userPreferences) {
+    this.attractionProximity = userPreferences.attractionProximity;
+    this.lowerPricePoint = userPreferences.lowerPricePoint;
+    this.highPricePoint = userPreferences.highPricePoint;
+    this.tripDuration = userPreferences.tripDuration;
+    this.ticketQuantity = userPreferences.ticketQuantity;
+    this.numberOfAdults = userPreferences.numberOfAdults;
+    this.numberOfChildren = userPreferences.numberOfChildren;
+  }
+
+  public UserPreferences(
+      int attractionProximity,
+      Money lowerPricePoint,
+      Money highPricePoint,
+      int tripDuration,
+      int ticketQuantity,
+      int numberOfAdults,
+      int numberOfChildren) {
+    this.attractionProximity = attractionProximity;
+    this.lowerPricePoint = lowerPricePoint;
+    this.highPricePoint = highPricePoint;
+    this.tripDuration = tripDuration;
+    this.ticketQuantity = ticketQuantity;
+    this.numberOfAdults = numberOfAdults;
+    this.numberOfChildren = numberOfChildren;
+  }
+
   public CurrencyUnit getCurrency() {
     return currency;
   }
 
-  public void setAttractionProximity(int attractionProximity) {
-    this.attractionProximity = attractionProximity;
-  }
-
   public int getAttractionProximity() {
     return attractionProximity;
+  }
+
+  public void setAttractionProximity(int attractionProximity) {
+    this.attractionProximity = attractionProximity;
   }
 
   public Money getLowerPricePoint() {

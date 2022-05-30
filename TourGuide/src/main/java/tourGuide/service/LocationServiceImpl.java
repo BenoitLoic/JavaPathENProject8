@@ -1,5 +1,14 @@
 package tourGuide.service;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,34 +24,29 @@ import tourGuide.model.VisitedLocation;
 import tourGuide.tracker.Tracker;
 import tourGuide.user.User;
 
-import javax.annotation.PostConstruct;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
 @Service
 public class LocationServiceImpl implements LocationService {
 
-  public Tracker tracker;
   private final Logger logger = LoggerFactory.getLogger(LocationServiceImpl.class);
+  private final ExecutorService executorService = Executors.newFixedThreadPool(200);
+  public Tracker tracker;
   @Value("${tourGuide.testMode}")
   boolean testMode;
-  private final ExecutorService executorService = Executors.newFixedThreadPool(200);
-  @Autowired private LocationClient locationClient;
-  @Autowired private RewardsService rewardsService;
-  @Autowired private UserService userService;
+  private final LocationClient locationClient;
+  private final RewardsService rewardsService;
+  private final UserService userService;
 
+  public LocationServiceImpl(LocationClient locationClient, RewardsService rewardsService, UserService userService) {
+    this.locationClient = locationClient;
+    this.rewardsService = rewardsService;
+    this.userService = userService;
+  }
 
   @PostConstruct
   void testModeInit() {
     if (!testMode) {
       logger.info("TestMode enabled");
-      tracker = new Tracker(this,rewardsService,userService);
+      tracker = new Tracker(this, rewardsService, userService);
       addShutDownHook();
     }
   }
@@ -156,5 +160,4 @@ public class LocationServiceImpl implements LocationService {
   private void addShutDownHook() {
     Runtime.getRuntime().addShutdownHook(new Thread(() -> tracker.stopTracking()));
   }
-
 }

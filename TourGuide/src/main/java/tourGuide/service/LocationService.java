@@ -1,13 +1,12 @@
 package tourGuide.service;
 
+import java.util.Collection;
+import java.util.Map;
+import java.util.UUID;
 import tourGuide.dto.GetNearbyAttractionDto;
 import tourGuide.model.Location;
 import tourGuide.model.VisitedLocation;
 import tourGuide.user.User;
-
-import java.util.Collection;
-import java.util.Map;
-import java.util.UUID;
 
 /** Service for Location features. Contain methods that create/read location and attractions. */
 public interface LocationService {
@@ -22,7 +21,7 @@ public interface LocationService {
   VisitedLocation getUserLocation(User user);
 
   /**
-   * This method wait for the active threads from executorService to end gracefully or else shutdown
+   * This method wait for the active threads from executorService to end gracefully or else shutdown.
    * after the timeout
    */
   void awaitTerminationAfterShutdown();

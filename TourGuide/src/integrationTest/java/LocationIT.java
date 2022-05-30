@@ -1,12 +1,10 @@
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import feign.FeignException;
+import java.util.*;
 import org.hamcrest.core.IsEqual;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -30,16 +28,12 @@ import tourGuide.helper.InternalTestRepository;
 import tourGuide.model.Attraction;
 import tourGuide.model.Location;
 import tourGuide.model.VisitedLocation;
-import tourGuide.service.RewardsService;
 import tourGuide.service.UserService;
-import tourGuide.service.UserServiceImpl;
-
-import java.util.*;
-
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -53,13 +47,13 @@ public class LocationIT {
   private final UUID userId = UUID.randomUUID();
   private final Date dateTest = new Date();
   private VisitedLocation visitedLocationTest;
-
   @Autowired MockMvc mockMvc;
   @Autowired ObjectMapper objectMapper;
   @MockBean LocationClient locationClientMock;
   @MockBean UserClient userClientMock;
   @SpyBean UserService userServiceMock;
   @MockBean RewardClient rewardClientMock;
+
 
   @BeforeEach
   void setUp() {
@@ -187,7 +181,8 @@ public class LocationIT {
         .andExpect(status().isBadRequest())
         .andExpect(
             result ->
-                assertThat(result.getResolvedException() instanceof IllegalArgumentException).isTrue());
+                assertThat(result.getResolvedException() instanceof IllegalArgumentException)
+                    .isTrue());
   }
 
   @Test
@@ -199,10 +194,11 @@ public class LocationIT {
 
     // THEN I get an error
     mockMvc
-            .perform(get(Url.GET_NEARBY_ATTRACTIONS).param("userName", "mrNo"))
-            .andExpect(status().isNotFound())
-            .andExpect(
-                    result ->
-                            assertThat(result.getResolvedException() instanceof DataNotFoundException).isTrue());
+        .perform(get(Url.GET_NEARBY_ATTRACTIONS).param("userName", "mrNo"))
+        .andExpect(status().isNotFound())
+        .andExpect(
+            result ->
+                assertThat(result.getResolvedException() instanceof DataNotFoundException)
+                    .isTrue());
   }
 }

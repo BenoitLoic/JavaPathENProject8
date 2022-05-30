@@ -13,5 +13,14 @@ import javax.validation.constraints.NotNull;
  * @param timeVisited the date
  */
 public record VisitedLocation(@NotNull UUID userId, @NotNull Location location, Date timeVisited) {
+    public VisitedLocation(@NotNull UUID userId, @NotNull Location location, Date timeVisited) {
+        this.userId = userId;
+        this.location = location;
+        this.timeVisited = new Date(timeVisited.getTime());
+    }
 
+    @Override
+    public Date timeVisited() {
+        return new Date(timeVisited.getTime());
+    }
 }
