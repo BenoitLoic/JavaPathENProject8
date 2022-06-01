@@ -22,7 +22,7 @@ import tourGuide.model.VisitedLocation;
 import tourGuide.service.LocationService;
 import tourGuide.service.RewardsServiceImpl;
 import tourGuide.service.UserService;
-import tourGuide.user.User;
+import tourGuide.model.user.User;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest(classes = Application.class)
@@ -39,7 +39,7 @@ public class TestPerformance {
 
   @BeforeAll
   static void beforeAll() {
-    InternalTestHelper.setInternalUserNumber(100000);
+    InternalTestHelper.setInternalUserNumber(10000);
     java.util.Locale.setDefault(java.util.Locale.US);
   }
 

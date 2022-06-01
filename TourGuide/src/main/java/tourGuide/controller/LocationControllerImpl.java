@@ -14,7 +14,7 @@ import tourGuide.exception.IllegalArgumentException;
 import tourGuide.model.Location;
 import tourGuide.service.LocationService;
 import tourGuide.service.UserService;
-import tourGuide.user.User;
+import tourGuide.model.user.User;
 import static tourGuide.config.Url.*;
 
 /** Rest Controller for Location features. */

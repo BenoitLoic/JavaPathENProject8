@@ -22,7 +22,7 @@ import tourGuide.model.UserReward;
 import tourGuide.model.VisitedLocation;
 import tourGuide.service.RewardsServiceImpl;
 import tourGuide.service.UserServiceImpl;
-import tourGuide.user.User;
+import tourGuide.model.user.User;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;

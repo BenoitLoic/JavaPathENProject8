@@ -22,7 +22,7 @@ import tourGuide.model.Location;
 import tourGuide.model.VisitedLocation;
 import tourGuide.service.TripDealsService;
 import tourGuide.service.UserServiceImpl;
-import tourGuide.user.User;
+import tourGuide.model.user.User;
 import tripPricer.Provider;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;

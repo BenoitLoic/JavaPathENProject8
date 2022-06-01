@@ -11,11 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tourGuide.client.RewardClient;
 import tourGuide.dto.GetNearbyAttractionDto;
-import tourGuide.exception.ResourceNotFoundException;
 import tourGuide.model.Attraction;
 import tourGuide.model.UserReward;
 import tourGuide.model.VisitedLocation;
-import tourGuide.user.User;
+import tourGuide.model.user.User;
 
 /** Reward service implementation. */
 @Service
@@ -28,6 +27,7 @@ public class RewardsServiceImpl implements RewardsService {
   @Autowired
   public RewardsServiceImpl(RewardClient rewardClient) {
     this.rewardClient = rewardClient;
+    addShutDownHook();
   }
 
   /**
@@ -78,22 +78,17 @@ public class RewardsServiceImpl implements RewardsService {
 
     for (VisitedLocation visitedLocation : user.getVisitedLocations()) {
 
-      try {
-        CompletableFuture.supplyAsync(
-                () -> rewardClient.addUserReward(user.getUserId(), visitedLocation), threadPool)
-            .thenAccept(
-                userReward -> {
-                  synchronized (attractionIds) {
-                    if (!attractionIds.contains(userReward.attraction().attractionId())) {
-                      user.addUserReward(userReward);
-                      attractionIds.add(userReward.attraction().attractionId());
-                    }
+      CompletableFuture.supplyAsync(
+              () -> rewardClient.addUserReward(user.getUserId(), visitedLocation), threadPool)
+          .thenAccept(
+              userReward -> {
+                synchronized (attractionIds) {
+                  if (!attractionIds.contains(userReward.attraction().attractionId())) {
+                    user.addUserReward(userReward);
+                    attractionIds.add(userReward.attraction().attractionId());
                   }
-                });
-      } catch (feign.FeignException fce) {
-        logger.error("Error, Feign client failed." + fce);
-        throw new ResourceNotFoundException("Error, cant reach service.");
-      }
+                }
+              });
     }
   }
 
@@ -145,5 +140,8 @@ public class RewardsServiceImpl implements RewardsService {
       threadPool.shutdownNow();
       Thread.currentThread().interrupt();
     }
+  }
+  private void addShutDownHook(){
+    Runtime.getRuntime().addShutdownHook(new Thread(()->this.awaitTerminationAfterShutdown()));
   }
 }

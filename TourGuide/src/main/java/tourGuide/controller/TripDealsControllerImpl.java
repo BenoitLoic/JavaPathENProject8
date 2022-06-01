@@ -13,7 +13,7 @@ import tourGuide.dto.AddUserPreferencesDto;
 import tourGuide.exception.IllegalArgumentException;
 import tourGuide.service.TripDealsService;
 import tourGuide.service.UserService;
-import tourGuide.user.User;
+import tourGuide.model.user.User;
 import tripPricer.Provider;
 import static tourGuide.config.Url.ADD_USER_PREFERENCES;
 import static tourGuide.config.Url.GET_TRIP_DEALS;

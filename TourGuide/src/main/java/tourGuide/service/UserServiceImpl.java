@@ -10,7 +10,7 @@ import tourGuide.client.UserClient;
 import tourGuide.dto.AddNewUser;
 import tourGuide.exception.DataNotFoundException;
 import tourGuide.helper.InternalTestRepository;
-import tourGuide.user.User;
+import tourGuide.model.user.User;
 
 @Service
 public class UserServiceImpl implements UserService {

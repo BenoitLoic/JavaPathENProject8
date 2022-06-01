@@ -17,7 +17,7 @@ import tourGuide.model.Attraction;
 import tourGuide.model.Location;
 import tourGuide.model.UserReward;
 import tourGuide.model.VisitedLocation;
-import tourGuide.user.User;
+import tourGuide.model.user.User;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.*;
 
@@ -183,6 +183,26 @@ class RewardsServiceTest {
     verify(rewardClientMock, times(3)).addUserReward(userId, visitedLocationTest);
 
     assertThat(userMock.getUserRewards()).isEqualTo(expected);
+  }
+
+  @Test
+  void addRewardForLastLocation() {
+    // GIVEN
+    User userMock = new User(userId, "userNameTest", "phoneTest", "emailTest");
+    userMock.addToVisitedLocations(visitedLocationTest);
+
+    // WHEN
+    when(rewardClientMock.addUserReward(Mockito.any(), Mockito.any()))
+        .thenReturn(new UserReward(userId, visitedLocationTest, attractionTest, 50));
+    // THEN
+    rewardsService.addRewardsForLastLocation(userMock);
+
+    // wait for completableFuture
+    rewardsService.awaitTerminationAfterShutdown();
+
+    verify(rewardClientMock, times(1)).addUserReward(userId, visitedLocationTest);
+    assertThat(userMock.getUserRewards().size()).isEqualTo(1);
+    assertThat(userMock.getUserRewards().get(0).rewardPoints()).isEqualTo(50);
   }
 
   @Test

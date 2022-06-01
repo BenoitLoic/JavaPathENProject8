@@ -6,7 +6,7 @@ import java.util.UUID;
 import tourGuide.dto.GetNearbyAttractionDto;
 import tourGuide.model.Location;
 import tourGuide.model.VisitedLocation;
-import tourGuide.user.User;
+import tourGuide.model.user.User;
 
 /** Service for Location features. Contain methods that create/read location and attractions. */
 public interface LocationService {

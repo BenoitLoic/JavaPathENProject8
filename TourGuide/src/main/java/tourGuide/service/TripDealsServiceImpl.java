@@ -9,8 +9,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import tourGuide.dto.AddUserPreferencesDto;
 import tourGuide.model.UserReward;
-import tourGuide.user.User;
-import tourGuide.user.UserPreferences;
+import tourGuide.model.user.User;
+import tourGuide.model.user.UserPreferences;
 import tripPricer.Provider;
 import tripPricer.TripPricer;
 

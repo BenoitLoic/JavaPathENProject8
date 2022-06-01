@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 import tourGuide.service.LocationService;
 import tourGuide.service.RewardsService;
 import tourGuide.service.UserService;
-import tourGuide.user.User;
+import tourGuide.model.user.User;
 
 public class Tracker extends Thread {
   private static final long trackingPollingInterval = TimeUnit.MINUTES.toSeconds(5);
@@ -46,11 +46,11 @@ public class Tracker extends Thread {
 
       List<User> users = userService.getAllUsers();
 
-      logger.debug("Begin Tracker. Tracking " + users.size() + " users.");
+      System.out.println(users.size());
 
+      logger.debug("Begin Tracker. Tracking " + users.size() + " users.");
       stopWatch.start();
-      users.stream()
-          .parallel()
+      users.parallelStream()
           .forEach(
               user -> {
                 try {
@@ -60,6 +60,7 @@ public class Tracker extends Thread {
                   throw new RuntimeException(e);
                 }
               });
+
       stopWatch.stop();
 
       logger.debug(

@@ -18,13 +18,13 @@ import tourGuide.dto.GetNearbyAttractionDto;
 import tourGuide.helper.InternalTestHelper;
 import tourGuide.model.Location;
 import tourGuide.service.*;
-import tourGuide.user.User;
+import tourGuide.model.user.User;
 import tripPricer.Provider;
 import tripPricer.TripPricer;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-//@Disabled
+@Disabled
 @SpringBootTest(classes = Application.class)
 @ActiveProfiles("test")
 public class TestTourGuideService {

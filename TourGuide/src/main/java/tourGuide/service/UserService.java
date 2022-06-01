@@ -1,7 +1,7 @@
 package tourGuide.service;
 
 import java.util.concurrent.CopyOnWriteArrayList;
-import tourGuide.user.User;
+import tourGuide.model.user.User;
 
 /** Service for user feature. */
 public interface UserService {

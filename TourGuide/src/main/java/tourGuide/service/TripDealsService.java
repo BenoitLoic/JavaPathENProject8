@@ -3,7 +3,7 @@ package tourGuide.service;
 import java.util.List;
 import java.util.UUID;
 import tourGuide.dto.AddUserPreferencesDto;
-import tourGuide.user.User;
+import tourGuide.model.user.User;
 import tripPricer.Provider;
 
 public interface TripDealsService {

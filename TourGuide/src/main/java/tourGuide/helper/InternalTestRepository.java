@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import tourGuide.model.Location;
 import tourGuide.model.VisitedLocation;
-import tourGuide.user.User;
+import tourGuide.model.user.User;
 
 @Component
 @SuppressFBWarnings("DMI_RANDOM_USED_ONLY_ONCE")

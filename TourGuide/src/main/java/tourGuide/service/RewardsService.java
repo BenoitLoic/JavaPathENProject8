@@ -5,7 +5,7 @@ import java.util.UUID;
 import tourGuide.dto.GetNearbyAttractionDto;
 import tourGuide.model.Attraction;
 import tourGuide.model.UserReward;
-import tourGuide.user.User;
+import tourGuide.model.user.User;
 
 /** Reward service interface. */
 public interface RewardsService {

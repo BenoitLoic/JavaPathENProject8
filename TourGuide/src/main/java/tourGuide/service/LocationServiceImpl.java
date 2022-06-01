@@ -11,7 +11,6 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import tourGuide.client.LocationClient;
@@ -22,7 +21,7 @@ import tourGuide.model.Attraction;
 import tourGuide.model.Location;
 import tourGuide.model.VisitedLocation;
 import tourGuide.tracker.Tracker;
-import tourGuide.user.User;
+import tourGuide.model.user.User;
 
 @Service
 public class LocationServiceImpl implements LocationService {
@@ -158,6 +157,9 @@ public class LocationServiceImpl implements LocationService {
   }
 
   private void addShutDownHook() {
-    Runtime.getRuntime().addShutdownHook(new Thread(() -> tracker.stopTracking()));
+    Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+      tracker.stopTracking();
+      this.awaitTerminationAfterShutdown();
+    }));
   }
 }

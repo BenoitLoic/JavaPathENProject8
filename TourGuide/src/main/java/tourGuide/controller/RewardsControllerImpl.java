@@ -11,7 +11,7 @@ import tourGuide.exception.IllegalArgumentException;
 import tourGuide.model.UserReward;
 import tourGuide.service.RewardsService;
 import tourGuide.service.UserService;
-import tourGuide.user.User;
+import tourGuide.model.user.User;
 import static tourGuide.config.Url.GET_REWARDS;
 
 @RestController

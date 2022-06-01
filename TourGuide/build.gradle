@@ -66,6 +66,9 @@ jacoco {
 
 test {
     finalizedBy jacocoTestReport
+    jacoco{
+        exclude()
+    }
 }
 
 testSets {
@@ -83,6 +86,11 @@ jacocoTestReport {
         csv.required = false
         html.destination file("${buildDir}/jacocoUTHtml")
     }
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: ['**/dto/**','**/helper/**'])
+        }))
+    }
 }
 
 jacocoIntegrationTestReport {
@@ -91,5 +99,10 @@ jacocoIntegrationTestReport {
         xml.required = true
         csv.required = false
         html.destination file("${buildDir}/jacocoITHtml")
+    }
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: ['**/dto/**','**/helper/**'])
+        }))
     }
 }

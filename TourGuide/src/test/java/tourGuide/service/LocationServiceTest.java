@@ -18,7 +18,7 @@ import tourGuide.exception.ResourceNotFoundException;
 import tourGuide.model.Attraction;
 import tourGuide.model.Location;
 import tourGuide.model.VisitedLocation;
-import tourGuide.user.User;
+import tourGuide.model.user.User;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
